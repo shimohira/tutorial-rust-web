@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import {
   getModuleExercisesById,
   lessonSections,
   overviewCards,
   roadmapPhases,
 } from "~/data/tutorial";
+
+const { getModuleProgress, getOverallProgress } = useTutorialProgress();
 
 useHead({
   title: "Rust Study Deck",
@@ -17,14 +20,28 @@ useHead({
   ],
 });
 
-const moduleCards = lessonSections.map((section) => ({
+const moduleBlueprints = lessonSections.map((section) => ({
   ...section,
   submoduleCount: section.submodules.length,
   exerciseCount: getModuleExercisesById(section.id).length,
 }));
 
-const totalSubmodules = moduleCards.reduce((sum, module) => sum + module.submoduleCount, 0);
-const totalLabs = moduleCards.reduce((sum, module) => sum + module.exerciseCount, 0);
+const moduleCards = computed(() => {
+  return moduleBlueprints.map((section) => {
+    const progress = getModuleProgress(section.id, section.submodules);
+
+    return {
+      ...section,
+      completedSubmodules: progress.completedSubmodules,
+      solvedExercises: progress.solvedExercises,
+      completionRatio: progress.completionRatio,
+    };
+  });
+});
+
+const overallProgress = computed(() => getOverallProgress(lessonSections));
+const totalSubmodules = moduleBlueprints.reduce((sum, module) => sum + module.submoduleCount, 0);
+const totalLabs = moduleBlueprints.reduce((sum, module) => sum + module.exerciseCount, 0);
 </script>
 
 <template>
@@ -45,12 +62,12 @@ const totalLabs = moduleCards.reduce((sum, module) => sum + module.exerciseCount
             <strong>{{ moduleCards.length }} halaman</strong>
           </div>
           <div>
-            <span>Submodule</span>
-            <strong>{{ totalSubmodules }} bagian</strong>
+            <span>Submodule selesai</span>
+            <strong>{{ overallProgress.completedSubmodules }} / {{ totalSubmodules }}</strong>
           </div>
           <div>
-            <span>Rust Lab</span>
-            <strong>{{ totalLabs }} latihan</strong>
+            <span>Rust Lab selesai</span>
+            <strong>{{ overallProgress.solvedExercises }} / {{ totalLabs }}</strong>
           </div>
         </div>
       </div>
@@ -93,9 +110,28 @@ const totalLabs = moduleCards.reduce((sum, module) => sum + module.exerciseCount
             <span class="module-card-badge">{{ module.badge }}</span>
             <h3>{{ module.title }}</h3>
             <p>{{ module.summary }}</p>
+            <div class="module-card-progress" :data-testid="`module-progress-${module.id}`">
+              <span>
+                {{
+                  module.submoduleCount > 0
+                    ? `${module.completedSubmodules} / ${module.submoduleCount} submodule selesai`
+                    : "Materi langsung tanpa submodule"
+                }}
+              </span>
+              <span>
+                {{
+                  module.exerciseCount > 0
+                    ? `${module.solvedExercises} / ${module.exerciseCount} lab selesai`
+                    : "Belum ada Rust Lab"
+                }}
+              </span>
+            </div>
+            <div class="progress-meter progress-meter-compact" aria-hidden="true">
+              <span :style="{ width: `${module.completionRatio * 100}%` }" />
+            </div>
             <div class="module-card-meta">
-              <span>{{ module.submoduleCount }} submodule</span>
-              <span>{{ module.exerciseCount }} lab</span>
+              <span>{{ module.submoduleCount > 0 ? `${module.submoduleCount} submodule` : "Materi langsung" }}</span>
+              <span>{{ module.exerciseCount > 0 ? `${module.exerciseCount} lab` : "Tanpa lab" }}</span>
               <span>Buka modul</span>
             </div>
           </NuxtLink>

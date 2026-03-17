@@ -1,12 +1,20 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import ExerciseWorkbench from "~/components/ExerciseWorkbench.vue";
 import type { LessonSubmodule } from "~/data/tutorial";
 
-defineProps<{
+const props = defineProps<{
+  moduleId: string;
   moduleBadge: string;
   submodule: LessonSubmodule;
   index: number;
 }>();
+
+const { getSubmoduleProgress } = useTutorialProgress();
+
+const submoduleProgress = computed(() => {
+  return getSubmoduleProgress(props.moduleId, props.submodule);
+});
 </script>
 
 <template>
@@ -20,11 +28,29 @@ defineProps<{
         <p class="eyebrow">{{ moduleBadge }} • Submodule {{ index + 1 }}</p>
         <h2>{{ submodule.title }}</h2>
       </div>
-      <div class="lesson-badge">Detail + Lab</div>
+      <div
+        class="lesson-badge"
+        :class="{ 'lesson-badge-complete': submoduleProgress.isCompleted }"
+        :data-testid="`submodule-progress-${submodule.id}`"
+      >
+        {{ submoduleProgress.isCompleted ? "Selesai" : `${submoduleProgress.solvedExercises}/${submoduleProgress.totalExercises} lab` }}
+      </div>
     </div>
 
     <p class="section-copy">
       {{ submodule.summary }}
+    </p>
+
+    <div class="submodule-progress-strip" aria-hidden="true">
+      <span :style="{ width: `${submoduleProgress.completionRatio * 100}%` }" />
+    </div>
+
+    <p class="submodule-progress-copy">
+      {{
+        submoduleProgress.isCompleted
+          ? "Semua latihan di submodule ini sudah selesai."
+          : `Selesaikan ${submoduleProgress.totalExercises - submoduleProgress.solvedExercises} latihan lagi untuk menutup submodule ini.`
+      }}
     </p>
 
     <div class="submodule-grid">
@@ -79,6 +105,8 @@ defineProps<{
 
     <ExerciseWorkbench
       :exercises="submodule.exercises"
+      :module-id="moduleId"
+      :submodule-id="submodule.id"
       :test-id="`lab-${submodule.id}`"
     />
   </section>

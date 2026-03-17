@@ -248,18 +248,90 @@ textarea {
   align-self: start;
 }
 
+.sidebar .panel {
+  padding: 24px 18px;
+}
+
 .toc-panel {
   position: sticky;
   top: 24px;
 }
 
+.sidebar-panel-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.sidebar-panel-head .eyebrow {
+  margin-bottom: 0;
+}
+
+.sidebar-panel-head span {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #8e3d1a;
+}
+
+.toc-nav {
+  display: grid;
+  gap: 8px;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
+}
+
+.module-toc-nav {
+  max-height: min(48vh, 420px);
+  overflow-y: auto;
+}
+
+.submodule-nav {
+  max-height: min(36vh, 320px);
+  overflow-y: auto;
+}
+
 .toc-link {
   display: block;
-  padding: 9px 12px;
+  min-height: 56px;
+  padding: 12px 14px;
   border-radius: 14px;
   color: #5c5348;
   text-decoration: none;
   transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.toc-link span,
+.toc-link small {
+  display: block;
+}
+
+.toc-link small {
+  margin-top: 2px;
+  color: #786d60;
+}
+
+.toc-kicker {
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.module-link {
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(118, 92, 72, 0.08);
+}
+
+.module-link span,
+.submodule-link span {
+  line-height: 1.38;
+}
+
+.module-link span {
+  font-weight: 600;
 }
 
 .toc-link:hover,
@@ -269,8 +341,19 @@ textarea {
   transform: translateX(2px);
 }
 
+.toc-link.complete {
+  background: rgba(42, 140, 85, 0.08);
+  color: #206744;
+}
+
 .submodule-link {
   font-size: 0.94rem;
+}
+
+.sidebar-note,
+.empty-state-copy {
+  margin: 0;
+  color: #5d5347;
 }
 
 .section-header,
@@ -309,6 +392,11 @@ textarea {
 }
 
 .success-pill {
+  background: rgba(42, 140, 85, 0.14);
+  color: #206744;
+}
+
+.lesson-badge-complete {
   background: rgba(42, 140, 85, 0.14);
   color: #206744;
 }
@@ -366,6 +454,17 @@ textarea {
   color: #5d5347;
 }
 
+.module-card-progress {
+  display: grid;
+  gap: 4px;
+}
+
+.module-card-progress span {
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: #114c41;
+}
+
 .module-card-badge,
 .module-nav-card span {
   display: inline-flex;
@@ -409,6 +508,38 @@ textarea {
 
 .submodule-panel {
   scroll-margin-top: 24px;
+}
+
+.submodule-progress-strip,
+.progress-meter {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(17, 76, 65, 0.1);
+}
+
+.submodule-progress-strip {
+  margin-top: 18px;
+}
+
+.submodule-progress-strip span,
+.progress-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #114c41, #cb6337);
+  transition: width 0.2s ease;
+}
+
+.submodule-progress-copy,
+.progress-copy {
+  margin: 12px 0 0;
+  color: #5d5347;
+}
+
+.empty-state-panel {
+  min-height: 180px;
 }
 
 .submodule-code-split {
@@ -503,6 +634,16 @@ textarea {
   background: rgba(255, 246, 239, 0.9);
 }
 
+.exercise-tab.solved {
+  border-color: rgba(42, 140, 85, 0.28);
+  background: rgba(241, 252, 245, 0.88);
+}
+
+.tab-status {
+  color: #206744;
+  font-weight: 700;
+}
+
 .lab-grid {
   grid-template-columns: 320px minmax(0, 1fr);
   margin-top: 10px;
@@ -526,6 +667,10 @@ textarea {
 .lab-note {
   margin: 0;
   color: #5c5248;
+}
+
+.progress-note {
+  color: #206744;
 }
 
 .editor-panel {
@@ -569,6 +714,11 @@ textarea {
 .primary-button:disabled {
   cursor: wait;
   opacity: 0.75;
+}
+
+.ghost-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .editor-shell {
@@ -643,6 +793,31 @@ textarea {
   border: 1px solid rgba(118, 92, 72, 0.12);
 }
 
+.progress-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.progress-summary-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.progress-summary-head strong {
+  font-size: 1.1rem;
+}
+
+.progress-summary-head span {
+  color: #8e3d1a;
+  font-weight: 700;
+}
+
+.progress-meter-compact {
+  height: 8px;
+}
+
 @media (max-width: 1080px) {
   .hero,
   .content-grid,
@@ -666,6 +841,11 @@ textarea {
 
   .toc-panel {
     position: static;
+  }
+
+  .module-toc-nav,
+  .submodule-nav {
+    max-height: 280px;
   }
 
   .hero-metrics {
@@ -696,7 +876,8 @@ textarea {
   .section-header,
   .lesson-head,
   .editor-toolbar,
-  .terminal-header {
+  .terminal-header,
+  .progress-summary-head {
     flex-direction: column;
   }
 

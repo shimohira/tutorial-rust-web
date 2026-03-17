@@ -11,9 +11,12 @@ interface RunnerResponse {
 
 const props = defineProps<{
   exercises: RustExercise[];
+  moduleId: string;
+  submoduleId: string;
   testId?: string;
 }>();
 
+const { isExerciseSolved, markExerciseSolved } = useTutorialProgress();
 const selectedId = ref(props.exercises[0]?.id ?? "");
 const drafts = reactive<Record<string, string>>({});
 const status = ref<"idle" | "running">("idle");
@@ -48,9 +51,27 @@ const isSolved = computed(() => {
   );
 });
 
+const solvedExerciseCount = computed(() => {
+  return props.exercises.filter((exercise) => {
+    return isExerciseSolved(props.moduleId, props.submoduleId, exercise.id);
+  }).length;
+});
+
+const currentExerciseCompleted = computed(() => {
+  if (!currentExercise.value) {
+    return false;
+  }
+
+  return isExerciseSolved(props.moduleId, props.submoduleId, currentExercise.value.id);
+});
+
 const resultTitle = computed(() => {
   if (status.value === "running") {
     return "Menjalankan compiler...";
+  }
+
+  if (!result.value && currentExerciseCompleted.value) {
+    return "Latihan ini sudah selesai";
   }
 
   if (!result.value) {
@@ -86,6 +107,18 @@ watch(
   },
   { deep: true },
 );
+
+watch(isSolved, (nextSolved) => {
+  if (!nextSolved || !currentExercise.value) {
+    return;
+  }
+
+  markExerciseSolved(props.moduleId, props.submoduleId, currentExercise.value.id);
+});
+
+function exerciseCompleted(exerciseId: string) {
+  return isExerciseSolved(props.moduleId, props.submoduleId, exerciseId);
+}
 
 async function runCode() {
   if (!currentExercise.value) {
@@ -155,11 +188,14 @@ function revealHint() {
         :key="exercise.id"
         type="button"
         class="exercise-tab"
-        :class="{ active: selectedId === exercise.id }"
+        :class="{ active: selectedId === exercise.id, solved: exerciseCompleted(exercise.id) }"
         @click="selectedId = exercise.id"
       >
         <span>{{ exercise.title }}</span>
         <small>{{ exercise.difficulty }}</small>
+        <small v-if="exerciseCompleted(exercise.id)" class="tab-status">
+          Sudah selesai
+        </small>
       </button>
     </div>
 
@@ -172,6 +208,15 @@ function revealHint() {
         <div class="pill-row">
           <span class="meta-pill">{{ currentExercise.difficulty }}</span>
           <span class="meta-pill">Expected: {{ currentExercise.expectedOutput }}</span>
+          <span
+            :class="currentExerciseCompleted ? 'success-pill' : 'meta-pill'"
+            data-testid="exercise-progress-status"
+          >
+            {{ currentExerciseCompleted ? "Status: selesai" : "Status: belum selesai" }}
+          </span>
+          <span class="meta-pill">
+            {{ solvedExerciseCount }} / {{ exercises.length }} latihan selesai
+          </span>
         </div>
 
         <div class="lab-focus">
@@ -204,6 +249,9 @@ function revealHint() {
         <p class="lab-note">
           Runner ini mengeksekusi <code>rustc</code> lokal melalui server Nuxt.
           Gunakan untuk pembelajaran lokal, bukan untuk kode yang tidak dipercaya.
+        </p>
+        <p v-if="currentExerciseCompleted && !result" class="lab-note progress-note">
+          Status selesai disimpan di browser ini. Anda bisa mengulang latihan kapan saja.
         </p>
       </section>
 
@@ -241,7 +289,7 @@ function revealHint() {
         <div class="terminal-panel">
           <div class="terminal-header">
             <strong>{{ resultTitle }}</strong>
-            <span v-if="isSolved" class="success-pill">Output sesuai</span>
+            <span v-if="currentExerciseCompleted" class="success-pill">Output sesuai</span>
           </div>
 
           <pre class="terminal-output" data-testid="terminal-output">{{ result?.stderr || result?.stdout || "Jalankan kode untuk melihat hasil compile atau output program." }}</pre>
@@ -251,7 +299,7 @@ function revealHint() {
             <pre>{{ result.stdout }}</pre>
           </div>
 
-          <div v-if="isSolved" class="success-panel">
+          <div v-if="currentExerciseCompleted && currentExercise" class="success-panel">
             <h4>Kenapa solusi ini benar</h4>
             <p>{{ currentExercise.explanation }}</p>
           </div>
@@ -260,7 +308,7 @@ function revealHint() {
     </div>
 
     <p v-else class="section-copy">
-      Belum ada latihan untuk submodule ini.
+      Belum ada latihan untuk bagian ini.
     </p>
   </div>
 </template>

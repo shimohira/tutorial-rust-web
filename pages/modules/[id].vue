@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import SubmoduleSection from "~/components/SubmoduleSection.vue";
 import TutorialSection from "~/components/TutorialSection.vue";
 import { getLessonSectionById, lessonSections, moduleIds } from "~/data/tutorial";
 
+const { clearModuleProgress, getModuleProgress, getSubmoduleProgress } = useTutorialProgress();
 const route = useRoute();
 
 const moduleId = computed(() => String(route.params.id ?? ""));
@@ -20,6 +22,36 @@ const exerciseCount = computed(() => {
     section.value?.submodules.reduce((total, submodule) => {
       return total + submodule.exercises.length;
     }, 0) ?? 0
+  );
+});
+
+const submoduleCount = computed(() => section.value?.submodules.length ?? 0);
+const hasSubmodules = computed(() => submoduleCount.value > 0);
+const hasExercises = computed(() => exerciseCount.value > 0);
+
+const moduleProgress = computed(() => {
+  if (!section.value) {
+    return {
+      completedSubmodules: 0,
+      totalSubmodules: 0,
+      solvedExercises: 0,
+      totalExercises: 0,
+      completionRatio: 0,
+    };
+  }
+
+  return getModuleProgress(section.value.id, section.value.submodules);
+});
+
+const submoduleProgressMap = computed(() => {
+  if (!section.value || !hasSubmodules.value) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    section.value.submodules.map((submodule) => {
+      return [submodule.id, getSubmoduleProgress(section.value!.id, submodule)];
+    }),
   );
 });
 
@@ -41,6 +73,46 @@ const nextSection = computed(() => {
   return getLessonSectionById(moduleIds[currentIndex.value + 1]) ?? null;
 });
 
+const moduleLearningSteps = computed(() => {
+  if (hasSubmodules.value) {
+    return [
+      "Mulai dari peta modul, lalu turun ke submodule satu per satu.",
+      "Baca contoh di tiap submodule sebelum menyentuh editor lab-nya.",
+      "Perbaiki compile error sampai output sesuai target, baru lanjut ke submodule berikutnya.",
+    ];
+  }
+
+  return [
+    "Mulai dari overview fondasi, detail penting, dan jebakan umum di modul ini.",
+    "Gunakan contoh kode utama modul sebagai jangkar sebelum masuk ke checkpoint.",
+    "Tutup modul ini dari checkpoint dan latihan lanjutan tanpa harus melewati submodule terpisah.",
+  ];
+});
+
+const moduleStructureCopy = computed(() => {
+  if (hasSubmodules.value) {
+    return `Setiap submodule memecah satu konsep besar menjadi langkah yang lebih sempit. Modul ini memiliki ${submoduleCount.value} submodule dengan contoh dan Rust Lab yang mengikuti fokus materi masing-masing.`;
+  }
+
+  return "Materi modul ini cukup jelas bila disajikan langsung di level modul. Karena itu halaman ini tetap lengkap tanpa memaksa pemecahan ke submodule tambahan.";
+});
+
+const progressSummaryLabel = computed(() => {
+  if (hasExercises.value) {
+    return `${moduleProgress.value.completedSubmodules} / ${moduleProgress.value.totalSubmodules} submodule selesai`;
+  }
+
+  if (hasSubmodules.value) {
+    return "Belum ada Rust Lab di modul ini";
+  }
+
+  return "Modul ini tidak memakai progress latihan";
+});
+
+const progressPercentLabel = computed(() => {
+  return hasExercises.value ? `${Math.round(moduleProgress.value.completionRatio * 100)}%` : "N/A";
+});
+
 useHead(() => ({
   title: section.value
     ? `${section.value.badge} - ${section.value.title}`
@@ -49,7 +121,9 @@ useHead(() => ({
     {
       name: "description",
       content: section.value
-        ? `${section.value.title} dengan submodule detail, contoh terpisah, dan Rust Lab per submodule.`
+        ? section.value.submodules.length > 0
+          ? `${section.value.title} dengan ${section.value.submodules.length} submodule detail, contoh terpisah, dan Rust Lab yang mengikuti tiap bagian.`
+          : `${section.value.title} dengan pembahasan langsung di level modul tanpa submodule tambahan.`
         : "Modul Rust",
     },
   ],
@@ -68,16 +142,20 @@ useHead(() => ({
 
         <div class="hero-metrics">
           <div>
-            <span>Submodule</span>
-            <strong>{{ section.submodules.length }} bagian</strong>
+            <span>{{ hasSubmodules ? "Submodule" : "Format materi" }}</span>
+            <strong>{{ hasSubmodules ? `${submoduleCount} bagian` : "Materi langsung" }}</strong>
           </div>
           <div>
-            <span>Checkpoint</span>
-            <strong>{{ section.checkpoints.length }} target</strong>
+            <span>{{ hasSubmodules ? "Progres submodule" : "Submodule" }}</span>
+            <strong data-testid="module-progress-submodules">
+              {{ hasSubmodules ? `${moduleProgress.completedSubmodules} / ${moduleProgress.totalSubmodules} selesai` : "Tidak dipakai" }}
+            </strong>
           </div>
           <div>
-            <span>Rust Lab</span>
-            <strong>{{ exerciseCount }} latihan</strong>
+            <span>{{ hasExercises ? "Rust Lab selesai" : "Rust Lab" }}</span>
+            <strong data-testid="module-progress-labs">
+              {{ hasExercises ? `${moduleProgress.solvedExercises} / ${exerciseCount} latihan` : "Belum ada lab" }}
+            </strong>
           </div>
         </div>
       </div>
@@ -86,19 +164,40 @@ useHead(() => ({
         <section class="panel panel-dark">
           <p class="eyebrow">Cara belajar modul ini</p>
           <ul class="bullet-list">
-            <li>Mulai dari peta modul, lalu turun ke submodule satu per satu.</li>
-            <li>Baca contoh di tiap submodule sebelum menyentuh editor lab-nya.</li>
-            <li>Perbaiki compile error sampai output sesuai target, baru lanjut ke submodule berikutnya.</li>
+            <li v-for="step in moduleLearningSteps" :key="step">{{ step }}</li>
           </ul>
         </section>
 
         <section class="panel accent-panel">
           <p class="eyebrow">Struktur materi</p>
-          <p>
-            Setiap submodule memecah satu konsep besar menjadi langkah yang lebih
-            sempit: konsep inti, cara membaca contoh, contoh kode, lalu Rust Lab
-            yang relevan hanya untuk topik itu.
+          <p>{{ moduleStructureCopy }}</p>
+        </section>
+
+        <section class="panel progress-panel">
+          <p class="eyebrow">Progress modul</p>
+          <div class="progress-summary-head">
+            <strong data-testid="module-progress-summary">{{ progressSummaryLabel }}</strong>
+            <span>{{ progressPercentLabel }}</span>
+          </div>
+          <div class="progress-meter" aria-hidden="true">
+            <span :style="{ width: `${moduleProgress.completionRatio * 100}%` }" />
+          </div>
+          <p class="progress-copy">
+            {{
+              hasExercises
+                ? "Progress disimpan lokal di browser ini. Selesaikan semua lab untuk menutup modul ini, atau reset jika ingin mengulang dari awal."
+                : "Modul ini tetap bisa dipelajari tanpa progress latihan. Jika nanti ditambah Rust Lab, panel ini akan mulai melacak penyelesaiannya."
+            }}
           </p>
+          <button
+            v-if="hasExercises"
+            type="button"
+            class="ghost-button"
+            :disabled="moduleProgress.solvedExercises === 0"
+            @click="clearModuleProgress(section.id)"
+          >
+            Reset progres modul
+          </button>
         </section>
       </div>
     </header>
@@ -107,32 +206,55 @@ useHead(() => ({
       <aside class="sidebar">
         <div class="sidebar-stack">
           <div class="panel toc-panel">
-            <p class="eyebrow">Semua modul</p>
-            <nav>
+            <div class="sidebar-panel-head">
+              <p class="eyebrow">Semua modul</p>
+              <span>{{ lessonSections.length }} total</span>
+            </div>
+            <nav class="toc-nav module-toc-nav" data-testid="module-sidebar-nav">
               <NuxtLink
                 v-for="item in lessonSections"
                 :key="item.id"
-                class="toc-link"
+                class="toc-link module-link"
                 :class="{ active: item.id === section.id }"
                 :to="`/modules/${item.id}`"
               >
-                {{ item.badge }}: {{ item.title }}
+                <small class="toc-kicker">{{ item.badge }}</small>
+                <span>{{ item.title }}</span>
               </NuxtLink>
             </nav>
           </div>
 
           <div class="panel submodule-toc-panel">
-            <p class="eyebrow">Submodule modul ini</p>
-            <nav>
+            <div class="sidebar-panel-head">
+              <p class="eyebrow">Submodule modul ini</p>
+              <span>{{ hasSubmodules ? `${submoduleCount} bagian` : "0 bagian" }}</span>
+            </div>
+            <nav
+              v-if="hasSubmodules"
+              class="toc-nav submodule-nav"
+              data-testid="submodule-sidebar-nav"
+            >
               <a
-                v-for="submodule in section.submodules"
+                v-for="(submodule, index) in section.submodules"
                 :key="submodule.id"
                 class="toc-link submodule-link"
+                :class="{ complete: submoduleProgressMap[submodule.id]?.isCompleted }"
                 :href="`#${submodule.id}`"
               >
-                {{ submodule.title }}
+                <small class="toc-kicker">Bagian {{ index + 1 }}</small>
+                <span>{{ submodule.title }}</span>
+                <small>
+                  {{
+                    submoduleProgressMap[submodule.id]?.isCompleted
+                      ? "Selesai"
+                      : `${submoduleProgressMap[submodule.id]?.solvedExercises ?? 0}/${submoduleProgressMap[submodule.id]?.totalExercises ?? 0} lab`
+                  }}
+                </small>
               </a>
             </nav>
+            <p v-else class="sidebar-note">
+              Modul ini disajikan langsung dari overview utama, jadi tidak ada daftar submodule untuk dinavigasi.
+            </p>
           </div>
         </div>
       </aside>
@@ -142,27 +264,42 @@ useHead(() => ({
 
         <section class="panel submodule-overview-panel">
           <div class="section-header">
-            <p class="eyebrow">Submodule Track</p>
-            <h2>Belajar modul ini lewat bagian-bagian yang lebih kecil</h2>
+            <p class="eyebrow">{{ hasSubmodules ? "Submodule Track" : "Format modul" }}</p>
+            <h2>
+              {{
+                hasSubmodules
+                  ? "Belajar modul ini lewat bagian-bagian yang lebih kecil"
+                  : "Modul ini tidak dipaksa punya submodule"
+              }}
+            </h2>
           </div>
 
-          <p class="section-copy">
-            Alih-alih satu blok materi besar, modul ini sekarang dipecah menjadi
-            {{ section.submodules.length }} submodule. Setiap submodule punya
-            contoh sendiri dan Rust Lab sendiri agar error yang Anda perbaiki
-            benar-benar sesuai dengan konsep yang baru dibaca.
-          </p>
+          <p class="section-copy">{{ moduleStructureCopy }}</p>
         </section>
 
-        <div class="submodule-stack">
+        <div v-if="hasSubmodules" class="submodule-stack">
           <SubmoduleSection
             v-for="(submodule, index) in section.submodules"
             :key="submodule.id"
             :index="index"
+            :module-id="section.id"
             :module-badge="section.badge"
             :submodule="submodule"
           />
         </div>
+
+        <section v-else class="panel empty-state-panel">
+          <div class="section-header">
+            <p class="eyebrow">Direct module</p>
+            <h2>Materi cukup disampaikan di level modul</h2>
+          </div>
+
+          <p class="section-copy empty-state-copy">
+            Beberapa topik tidak perlu dipaksa menjadi submodule. Jika struktur
+            modulnya sudah cukup jelas lewat fondasi, detail, checkpoint, dan
+            contoh utama, halaman ini tetap valid tanpa pemecahan tambahan.
+          </p>
+        </section>
 
         <section class="panel module-nav-panel">
           <div class="section-header">
