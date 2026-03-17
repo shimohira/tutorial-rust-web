@@ -54,6 +54,8 @@ Lalu minta thread baru untuk membaca `MEMORY.md` terlebih dahulu.
 - Progress tracking lokal per exercise/submodule sudah ditambahkan memakai local storage browser.
 - Halaman modul sekarang menampilkan ringkasan progres, status per submodule, dan tombol reset progres modul.
 - Landing page sekarang menampilkan progres per modul dan progres total yang sudah diselesaikan.
+- Coverage materi di `data/tutorial.ts` sudah diperluas agar lebih dekat ke outline video sumber, terutama pada syntax, ownership, control flow, modeling, abstraction, stdlib, dan advanced.
+- Jumlah submodule sekarang lebih variatif: `syntax` 4, `ownership` 4, `control-flow` 3, `modeling` 3, `abstraction` 3, `stdlib` 4, dan `advanced` 6.
 - README dan `.gitignore` sudah ditambahkan.
 
 ## Verifikasi terakhir
@@ -71,6 +73,7 @@ Hasil terakhir:
 - browser smoke test sukses
 - test memverifikasi 3 submodule pada modul setup, memastikan masing-masing lab bisa dijalankan, progres modul berubah, dan progres tetap tersimpan setelah reload
 - test juga memverifikasi menu sidebar modul tetap bisa dipakai untuk membuka modul terakhir pada viewport sempit
+- build dan test terakhir tetap lolos setelah ekspansi materi/submodule besar di `data/tutorial.ts`
 
 ## Catatan environment
 
