@@ -49,6 +49,8 @@ Lalu minta thread baru untuk membaca `MEMORY.md` terlebih dahulu.
 - Halaman modul sekarang adaptif untuk jumlah submodule berapa pun, termasuk nol.
 - Modul setup saat ini sudah dipecah menjadi 3 submodule untuk menunjukkan bahwa struktur tidak dibatasi 2 bagian.
 - Jika submodule dipakai, masing-masing submodule dapat memiliki Rust Lab sendiri.
+- Materi sekarang juga bisa menyimpan referensi resmi Rust docs per modul dan per submodule.
+- Halaman modul menampilkan panel "Rust docs terkait" untuk topik yang memang punya rujukan resmi yang relevan, misalnya `Range`, `String`, `Option`, `Iterator`, `Result`, `Deref`, `Rc`, dan `RefCell`.
 - Menu sidebar modul dan submodule sudah dibuat lebih compact dan scrollable agar item terakhir tetap mudah diakses, termasuk di viewport sempit.
 - `ExerciseWorkbench.vue` sudah aman dipakai berkali-kali dalam satu halaman.
 - Progress tracking lokal per exercise/submodule sudah ditambahkan memakai local storage browser.
@@ -73,6 +75,7 @@ Hasil terakhir:
 - browser smoke test sukses
 - test memverifikasi 3 submodule pada modul setup, memastikan masing-masing lab bisa dijalankan, progres modul berubah, dan progres tetap tersimpan setelah reload
 - test juga memverifikasi menu sidebar modul tetap bisa dipakai untuk membuka modul terakhir pada viewport sempit
+- test juga memverifikasi modul yang relevan menampilkan link resmi Rust docs, termasuk link `Range` di modul `control-flow`
 - build dan test terakhir tetap lolos setelah ekspansi materi/submodule besar di `data/tutorial.ts`
 
 ## Catatan environment
