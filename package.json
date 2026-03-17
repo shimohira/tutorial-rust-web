@@ -1,0 +1,29 @@
+{
+  "name": "tutorial-rust-web",
+  "version": "1.0.0",
+  "description": "Nuxt app untuk tutorial Rust dasar dengan laboratorium latihan interaktif.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "test:browser": "playwright test"
+  },
+  "keywords": [
+    "nuxt",
+    "vue",
+    "rust",
+    "tutorial",
+    "playground"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "nuxt": "^4.4.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  }
+}
