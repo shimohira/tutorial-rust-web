@@ -14,17 +14,43 @@ Web tutorial Rust berbasis Nuxt dengan materi yang dipecah per modul. Satu modul
 
 Pastikan environment lokal memiliki:
 
-- Node.js dan npm
-- Rust toolchain yang menyediakan `rustc`
+- Node.js `20.19.0+` atau `22.12.0+`
+- npm `10+`
+- Rust stable toolchain yang menyediakan `rustc`
 - koneksi lokal untuk menjalankan server Nuxt
 
 Rust Lab di web ini menjalankan kompilasi Rust melalui endpoint server lokal, jadi `rustc` harus tersedia di `PATH`.
+
+## Versi dependency
+
+Versi yang dipakai oleh project saat ini:
+
+- Nuxt `4.4.2`
+- Playwright `1.58.2`
+
+Versi environment yang direkomendasikan untuk menjalankan project ini:
+
+- Node.js `20.19.0+` atau `22.12.0+`
+- npm `10+`
+- Rust stable terbaru dengan `rustc` tersedia di `PATH`
+
+Versi yang dipakai saat verifikasi lokal terakhir:
+
+- Node.js `23.9.0`
+- npm `10.9.2`
+- rustc `1.93.1`
 
 ## Instalasi
 
 ```bash
 cd /Users/abdul/project/NSSF/latihan/rust/tutorial-rust-web
 npm install
+```
+
+Jika ingin menjalankan browser test di mesin baru, install browser Playwright satu kali:
+
+```bash
+npx playwright install
 ```
 
 ## Menjalankan saat development
