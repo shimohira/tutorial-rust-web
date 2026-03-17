@@ -425,6 +425,106 @@ fn main() {
           },
         ],
       },
+      {
+        id: "syntax-comments-numbers",
+        title: "Comment, number, dan numeric operation yang mudah dipindai",
+        summary:
+          "Sebelum logika program membesar, Anda perlu nyaman dengan komentar singkat, tipe angka dasar, dan operasi matematika yang paling sering muncul.",
+        concepts: [
+          "Komentar satu baris dengan // membantu memberi konteks tanpa memengaruhi hasil kompilasi.",
+          "Integer dan float dipakai untuk kebutuhan angka yang berbeda, tetapi operator dasarnya tetap serupa.",
+          "Operator +, -, *, /, dan % adalah fondasi untuk banyak perhitungan kecil di program nyata.",
+        ],
+        walkthrough: [
+          "Mulai dari komentar kecil untuk menandai niat perhitungan.",
+          "Gunakan angka yang sederhana agar Anda fokus ke syntax dan operatornya.",
+          "Pastikan setiap statement angka ditutup rapi sebelum hasil akhir dicetak.",
+        ],
+        exampleLabel: "Komentar dan operasi angka paling dasar",
+        exampleCode: `fn main() {
+    // hitung total setelah diskon
+    let price = 20;
+    let discount = 5;
+    let total = (price - discount) * 2;
+
+    println!("{total}");
+}`,
+        exercises: [
+          {
+            id: "syntax-numeric-operations",
+            title: "Rapikan operasi angka",
+            difficulty: "Pemula",
+            goal: "Perbaiki statement angka agar hasil operasi dapat dicetak dengan benar.",
+            focus: [
+              "Operator aritmetika harus dipakai di statement yang valid lebih dulu.",
+              "Kesalahan syntax kecil di baris awal bisa menahan seluruh alur hitung.",
+            ],
+            brokenCode: `fn main() {
+    // target akhir 42
+    let base = 20
+    let bonus = 2;
+    let total = base * 2 + bonus;
+    println!("{total}");
+}`,
+            expectedOutput: "42",
+            hints: [
+              "Periksa statement pertama sebelum baris perhitungan total.",
+              "Rust tetap menuntut penutup statement walau ekspresi angkanya sederhana.",
+            ],
+            explanation:
+              "Numeric operation di Rust terasa mudah jika fondasi statement-nya sudah rapi. Begitu baris deklarasi valid, ekspresi hitung akan dievaluasi normal.",
+          },
+        ],
+      },
+      {
+        id: "syntax-boolean-logic",
+        title: "Boolean, comparison operator, dan logika dasar",
+        summary:
+          "Banyak keputusan program dibangun dari perbandingan dan boolean. Submodule ini membuat Anda nyaman membaca hasil true atau false secara eksplisit.",
+        concepts: [
+          "Perbandingan seperti >, <, ==, dan != menghasilkan nilai boolean.",
+          "Operator boolean seperti && dan || menyusun beberapa kondisi menjadi satu keputusan.",
+          "Boolean kecil sangat cocok diprint langsung untuk memeriksa perilaku program saat belajar.",
+        ],
+        walkthrough: [
+          "Bangun dulu satu kondisi perbandingan yang mudah diverifikasi.",
+          "Gabungkan dua hasil boolean dengan operator logika yang tepat.",
+          "Cetak setiap hasil agar Anda benar-benar melihat aliran nilainya.",
+        ],
+        exampleLabel: "Perbandingan dan logika boolean",
+        exampleCode: `fn main() {
+    let bigger = 10 > 3;
+    let same = 4 == 4;
+    let ready = bigger && same;
+
+    println!("{} {} {}", bigger, same, ready);
+}`,
+        exercises: [
+          {
+            id: "syntax-boolean-operators",
+            title: "Lengkapi logika boolean",
+            difficulty: "Pemula",
+            goal: "Perbaiki ekspresi boolean agar semua hasil perbandingan bisa dicetak dengan benar.",
+            focus: [
+              "Perbandingan menghasilkan boolean yang bisa digabung dengan operator logika.",
+              "Baris boolean tetap harus valid secara syntax sebelum hasilnya dipakai.",
+            ],
+            brokenCode: `fn main() {
+    let bigger = 10 > 3;
+    let same = 4 == 4;
+    let ready = bigger && same
+    println!("{} {} {}", bigger, same, ready);
+}`,
+            expectedOutput: "true true true",
+            hints: [
+              "Lihat batas antara deklarasi ready dan pemanggilan println!.",
+              "Operator logikanya sudah benar, tinggal rapikan penutup statement.",
+            ],
+            explanation:
+              "Boolean di Rust sangat langsung: buat kondisi, gabungkan bila perlu, lalu pakai hasilnya. Yang sering menghambat justru syntax kecil di akhir statement.",
+          },
+        ],
+      },
     ],
   },
   {
@@ -592,6 +692,112 @@ fn main() {
           },
         ],
       },
+      {
+        id: "ownership-memory-moves",
+        title: "Stack, heap, move, dan ownership di function",
+        summary:
+          "Submodule ini menautkan model memori Rust ke perilaku function. Anda akan melihat bahwa perpindahan ownership ke function adalah konsekuensi alami dari siapa yang memegang data heap.",
+        concepts: [
+          "Value kecil fixed-size sering hidup di stack, sedangkan String menyimpan buffer di heap.",
+          "Ketika String dikirim ke function tanpa borrow, ownership berpindah ke function tersebut.",
+          "Value yang sudah dipindah harus dikembalikan lagi jika caller masih ingin memakainya.",
+        ],
+        walkthrough: [
+          "Mulai dari satu function yang menerima String dan mengembalikannya lagi.",
+          "Baca alur perpindahan owner dari caller ke callee, lalu kembali lagi ke caller.",
+          "Gunakan output kecil agar terlihat bahwa data masih hidup setelah function selesai.",
+        ],
+        exampleLabel: "Ownership masuk dan keluar dari function",
+        exampleCode: `fn take_and_return(name: String) -> String {
+    name
+}
+
+fn main() {
+    let title = String::from("Rust");
+    let title = take_and_return(title);
+    println!("{title}");
+}`,
+        exercises: [
+          {
+            id: "ownership-function-move",
+            title: "Kembalikan ownership dari function",
+            difficulty: "Menengah",
+            goal: "Perbaiki signature function agar String yang dipindah ke function bisa kembali dipakai caller.",
+            focus: [
+              "Ownership yang masuk ke function dapat dikembalikan lagi lewat return value.",
+              "Return type function harus valid agar alur perpindahan data terbaca compiler.",
+            ],
+            brokenCode: `fn take_and_return(name: String) => String {
+    name
+}
+
+fn main() {
+    let title = String::from("Rust");
+    let title = take_and_return(title);
+    println!("{title}");
+}`,
+            expectedOutput: "Rust",
+            hints: [
+              "Cek cara Rust menulis return type function.",
+              "Value String sudah benar dikembalikan di body function; masalahnya ada di signature.",
+            ],
+            explanation:
+              "Ownership di function menjadi jauh lebih mudah dipahami ketika signature-nya benar. Dengan return type yang valid, caller bisa menerima kembali owner data heap tersebut.",
+          },
+        ],
+      },
+      {
+        id: "ownership-slices",
+        title: "Slice dan string slice untuk mengambil sebagian data",
+        summary:
+          "Setelah borrow terasa aman, langkah berikutnya adalah memahami slice. Anda tidak perlu memiliki seluruh data untuk membaca sebagian kecil isinya.",
+        concepts: [
+          "Slice adalah reference ke sebagian data, bukan owner baru.",
+          "&str adalah string slice yang sangat umum dipakai pada API Rust.",
+          "Return type slice harus merepresentasikan bahwa hasilnya masih menunjuk ke data asal.",
+        ],
+        walkthrough: [
+          "Mulai dari string yang jelas, lalu ambil beberapa karakter pertamanya.",
+          "Perhatikan bahwa function cukup menerima &str, bukan String penuh.",
+          "Kembalikan slice agar caller tetap bisa memakai string asli dan hasil potongannya.",
+        ],
+        exampleLabel: "String slice yang aman",
+        exampleCode: `fn first_word(text: &str) -> &str {
+    &text[..4]
+}
+
+fn main() {
+    let title = String::from("rust dasar");
+    println!("{}", first_word(&title));
+}`,
+        exercises: [
+          {
+            id: "ownership-string-slice",
+            title: "Kembalikan string slice yang benar",
+            difficulty: "Menengah",
+            goal: "Perbaiki return type function agar string slice bisa dikembalikan dan dicetak.",
+            focus: [
+              "String slice harus direpresentasikan sebagai &str, bukan str mentah.",
+              "Function slice cukup menerima borrow ke string asal.",
+            ],
+            brokenCode: `fn first_word(text: &str) -> str {
+    &text[..4]
+}
+
+fn main() {
+    let title = String::from("rust dasar");
+    println!("{}", first_word(&title));
+}`,
+            expectedOutput: "rust",
+            hints: [
+              "Lihat tipe yang biasa dipakai Rust untuk string slice.",
+              "Return type function harus menandakan bahwa hasilnya masih berupa reference.",
+            ],
+            explanation:
+              "Slice tidak memiliki data sendiri. Karena itu return type-nya juga harus berupa reference ke data asal, yaitu &str untuk potongan string.",
+          },
+        ],
+      },
     ],
   },
   {
@@ -751,6 +957,64 @@ fn main() {
             ],
             explanation:
               "while di Rust tidak memakai titik dua atau kata kunci tambahan. Yang dibutuhkan hanyalah kondisi yang valid dan blok tubuh yang tertutup rapi.",
+          },
+        ],
+      },
+      {
+        id: "control-flow-functions",
+        title: "Function, parameter, return value, dan recursion kecil",
+        summary:
+          "Loop bukan satu-satunya alat untuk mengatur alur. Function membantu Anda memecah logika, dan recursion kecil melatih cara berpikir bertahap yang tetap eksplisit.",
+        concepts: [
+          "Function Rust selalu menuliskan tipe parameter dengan jelas.",
+          "Expression terakhir tanpa titik koma bisa menjadi nilai balik function.",
+          "Recursion hanya masuk akal jika kasus basisnya jelas dan langkah pengurangannya aman.",
+        ],
+        walkthrough: [
+          "Mulai dari function kecil dengan satu parameter angka.",
+          "Pastikan kasus basis dibaca lebih dulu sebelum langkah recursive.",
+          "Cek signature return type sebelum memeriksa isi body yang lebih dalam.",
+        ],
+        exampleLabel: "Recursion kecil yang eksplisit",
+        exampleCode: `fn factorial(n: u32) -> u32 {
+    if n == 0 {
+        1
+    } else {
+        n * factorial(n - 1)
+    }
+}
+
+fn main() {
+    println!("{}", factorial(5));
+}`,
+        exercises: [
+          {
+            id: "control-flow-factorial",
+            title: "Signature factorial recursive",
+            difficulty: "Menengah",
+            goal: "Perbaiki signature function recursive agar hasil faktorial bisa dihitung dan dicetak.",
+            focus: [
+              "Function recursive tetap tunduk pada aturan signature Rust biasa.",
+              "Return type yang benar membantu compiler memahami hasil akhir recursion.",
+            ],
+            brokenCode: `fn factorial(n: u32) => u32 {
+    if n == 0 {
+        1
+    } else {
+        n * factorial(n - 1)
+    }
+}
+
+fn main() {
+    println!("{}", factorial(5));
+}`,
+            expectedOutput: "120",
+            hints: [
+              "Bandingkan cara return type ditulis pada function Rust biasa.",
+              "Body recursion-nya sudah masuk akal; fokus dulu ke deklarasinya.",
+            ],
+            explanation:
+              "Recursion yang benar tetap berawal dari signature function yang benar. Begitu panah return type ditulis valid, compiler dapat mengevaluasi kasus basis dan langkah recursive-nya.",
           },
         ],
       },
@@ -949,6 +1213,60 @@ fn main() {
           },
         ],
       },
+      {
+        id: "modeling-type-alias",
+        title: "Type alias untuk menamai intent data",
+        summary:
+          "Type alias tidak menambah biaya runtime, tetapi sangat membantu keterbacaan. Saat domain mulai punya istilah khusus, alias membuat intent kode lebih cepat dipahami.",
+        concepts: [
+          "type alias memberi nama baru pada tipe yang sudah ada.",
+          "Alias membantu domain terasa lebih jelas tanpa membuat tipe baru yang berbeda saat runtime.",
+          "Syntax type alias sederhana, tetapi tetap harus ditutup lengkap agar file bisa diparse.",
+        ],
+        walkthrough: [
+          "Mulai dari alias kecil seperti UserId atau OrderId.",
+          "Pakai alias itu di signature function agar intent-nya langsung terbaca.",
+          "Cetak hasil akhir dengan format string sederhana supaya fokus tetap ke bentuk alias-nya.",
+        ],
+        exampleLabel: "Type alias yang membuat intent lebih jelas",
+        exampleCode: `type UserId = u64;
+
+fn describe(id: UserId) -> String {
+    format!("user-{id}")
+}
+
+fn main() {
+    println!("{}", describe(42));
+}`,
+        exercises: [
+          {
+            id: "modeling-type-alias-user-id",
+            title: "Tutup type alias dengan benar",
+            difficulty: "Menengah",
+            goal: "Perbaiki deklarasi type alias agar function dapat memakainya untuk mencetak identitas user.",
+            focus: [
+              "Type alias sangat ringan, tetapi tetap punya syntax deklarasi yang tegas.",
+              "Alias yang valid membantu signature function lebih mudah dibaca.",
+            ],
+            brokenCode: `type UserId = u64
+
+fn describe(id: UserId) -> String {
+    format!("user-{id}")
+}
+
+fn main() {
+    println!("{}", describe(42));
+}`,
+            expectedOutput: "user-42",
+            hints: [
+              "Periksa penutup deklarasi alias sebelum function pertama dimulai.",
+              "Compiler perlu melihat batas yang jelas antara alias dan item berikutnya.",
+            ],
+            explanation:
+              "Type alias memang ringan, tetapi tetap item penuh di level file. Begitu deklarasinya ditutup benar, function berikutnya bisa memakai alias itu tanpa masalah.",
+          },
+        ],
+      },
     ],
   },
   {
@@ -1123,6 +1441,60 @@ fn main() {
           },
         ],
       },
+      {
+        id: "abstraction-modules",
+        title: "Module, crate, dan visibility yang rapi",
+        summary:
+          "Sebelum trait dan generic terasa berguna, kode perlu ditata dulu. Submodule ini memperjelas relasi antara module kecil, batas pub, dan ide crate sebagai unit project.",
+        concepts: [
+          "mod membagi kode ke ruang nama yang lebih kecil dan fokus.",
+          "pub menentukan mana yang boleh diakses dari luar module.",
+          "crate adalah unit kompilasi utama tempat module-module itu hidup bersama.",
+        ],
+        walkthrough: [
+          "Mulai dari satu module kecil di file yang sama agar fokus ke syntax dan visibility.",
+          "Buka hanya function yang memang perlu dipakai dari luar.",
+          "Panggil function lewat path module agar relasi namanya terasa jelas.",
+        ],
+        exampleLabel: "Module kecil dengan satu member publik",
+        exampleCode: `mod greeting {
+    pub fn text() -> &'static str {
+        "halo"
+    }
+}
+
+fn main() {
+    println!("{}", greeting::text());
+}`,
+        exercises: [
+          {
+            id: "abstraction-module-pub",
+            title: "Buka function module yang diperlukan",
+            difficulty: "Menengah",
+            goal: "Perbaiki visibility function agar bisa dipanggil dari luar module.",
+            focus: [
+              "Member module bersifat private secara default.",
+              "pub dipakai secara selektif untuk member yang memang perlu dibuka.",
+            ],
+            brokenCode: `mod greeting {
+    fn text() -> &'static str {
+        "halo"
+    }
+}
+
+fn main() {
+    println!("{}", greeting::text());
+}`,
+            expectedOutput: "halo",
+            hints: [
+              "Function di dalam module belum tentu langsung bisa dipanggil dari luar.",
+              "Cari kata kunci yang biasa dipakai Rust untuk membuka akses keluar module.",
+            ],
+            explanation:
+              "Visibility adalah bagian penting dari desain module Rust. Dengan membuka hanya member yang relevan, Anda menjaga batas API tetap jelas sejak awal.",
+          },
+        ],
+      },
     ],
   },
   {
@@ -1285,6 +1657,102 @@ fn main() {
           },
         ],
       },
+      {
+        id: "stdlib-string-formatting",
+        title: "String API, manipulasi string, dan formatting",
+        summary:
+          "String di Rust sering dipakai bersama method manipulasi kecil dan macro formatting. Submodule ini membuat Anda nyaman merangkai teks tanpa kehilangan kejelasan alur datanya.",
+        concepts: [
+          "format! membangun String baru dari template dan nilai yang disisipkan.",
+          "Method String dan &str seperti trim, to_uppercase, atau replace membantu transformasi teks harian.",
+          "Display dan Debug punya peran berbeda untuk output yang rapi vs teknis.",
+        ],
+        walkthrough: [
+          "Mulai dari teks pendek yang mudah diverifikasi hasil akhirnya.",
+          "Pisahkan transformasi string dari baris formatting akhir agar alurnya mudah dibaca.",
+          "Gunakan output tunggal untuk memastikan hasil manipulasi memang sesuai target.",
+        ],
+        exampleLabel: "Formatting string yang paling sering dipakai",
+        exampleCode: `fn main() {
+    let name = "Rust";
+    let message = format!("Halo, {}", name);
+    println!("{message}");
+}`,
+        exercises: [
+          {
+            id: "stdlib-format-macro",
+            title: "Pakai format! dengan benar",
+            difficulty: "Menengah",
+            goal: "Perbaiki macro formatting agar string sapaan bisa dibangun dan dicetak.",
+            focus: [
+              "format! adalah macro, bukan function biasa.",
+              "Formatting string sederhana adalah pintu masuk yang bagus ke manipulasi teks harian.",
+            ],
+            brokenCode: `fn main() {
+    let name = "Rust";
+    let message = format("Halo, {}", name);
+    println!("{message}");
+}`,
+            expectedOutput: "Halo, Rust",
+            hints: [
+              "Bandingkan cara memanggil format dengan cara memanggil println!.",
+              "Ada detail kecil di nama pemanggilan yang membedakan macro dan function.",
+            ],
+            explanation:
+              "String manipulation di Rust sering dimulai dari macro formatting. Begitu format! dipanggil dengan bentuk yang benar, Anda bisa membangun String baru dengan sangat cepat.",
+          },
+        ],
+      },
+      {
+        id: "stdlib-collections",
+        title: "Vec, HashMap, HashSet, dan collection yang sering muncul",
+        summary:
+          "Submodule ini merangkum collection yang paling sering dipakai setelah array. Tujuannya bukan menghafal API lengkap, tetapi tahu kapan memilih data berurutan, key-value, atau data unik.",
+        concepts: [
+          "Vec cocok sebagai collection default untuk data berurutan yang tumbuh dinamis.",
+          "HashMap dipakai ketika data diakses lewat key.",
+          "HashSet berguna saat Anda hanya peduli keunikan nilai, bukan posisinya.",
+        ],
+        walkthrough: [
+          "Mulai dari Vec sebelum masuk ke map dan set.",
+          "Gunakan HashMap kecil agar relasi key-value langsung terasa.",
+          "Cetak satu nilai hasil lookup sederhana untuk memastikan struktur datanya terisi benar.",
+        ],
+        exampleLabel: "HashMap kecil untuk key-value dasar",
+        exampleCode: `use std::collections::HashMap;
+
+fn main() {
+    let mut scores = HashMap::new();
+    scores.insert("rust", 95);
+    println!("{}", scores["rust"]);
+}`,
+        exercises: [
+          {
+            id: "stdlib-hashmap-basic",
+            title: "Isi HashMap lalu baca nilainya",
+            difficulty: "Menengah",
+            goal: "Perbaiki deklarasi HashMap agar data bisa diinsert lalu dibaca dengan key yang benar.",
+            focus: [
+              "Collection key-value sederhana membantu membangun intuisi terhadap HashMap.",
+              "Statement insert harus valid sebelum lookup dilakukan.",
+            ],
+            brokenCode: `use std::collections::HashMap;
+
+fn main() {
+    let mut scores = HashMap::new()
+    scores.insert("rust", 95);
+    println!("{}", scores["rust"]);
+}`,
+            expectedOutput: "95",
+            hints: [
+              "Lihat penutup deklarasi HashMap sebelum pemanggilan insert.",
+              "Lookup key-nya sudah benar; masalahnya muncul lebih awal.",
+            ],
+            explanation:
+              "Collection sering terlihat kompleks padahal fondasinya tetap kembali ke deklarasi dan operasi kecil yang valid. Setelah HashMap terbentuk rapi, insert dan lookup berjalan normal.",
+          },
+        ],
+      },
     ],
   },
   {
@@ -1443,6 +1911,222 @@ fn main() {
             ],
             explanation:
               "Operator ? bekerja dengan sangat rapi jika function pemanggil juga mengembalikan Result. Pada program kecil, membuat main mengembalikan Result adalah solusi yang idiomatis.",
+          },
+        ],
+      },
+      {
+        id: "advanced-lifetimes",
+        title: "Lifetime untuk relasi reference yang lebih jelas",
+        summary:
+          "Lifetime bukan sihir tambahan, tetapi cara compiler memahami hubungan antar-reference. Submodule ini memberi contoh paling kecil yang sering muncul saat dua input reference dibandingkan.",
+        concepts: [
+          "Lifetime annotation menjelaskan relasi antar-reference, bukan memperpanjang umur data.",
+          "Function yang mengembalikan salah satu dari beberapa reference input sering membutuhkan lifetime eksplisit.",
+          "Nama lifetime seperti 'a adalah label relasi, bukan tipe baru.",
+        ],
+        walkthrough: [
+          "Mulai dari function dua input yang mengembalikan salah satu input tersebut.",
+          "Cari dulu lokasi compiler kehilangan informasi relasi antar-reference.",
+          "Tambahkan annotation sesingkat mungkin, hanya di tempat yang memang dibutuhkan.",
+        ],
+        exampleLabel: "Lifetime pada function longest",
+        exampleCode: `fn longest<'a>(left: &'a str, right: &'a str) -> &'a str {
+    if left.len() > right.len() {
+        left
+    } else {
+        right
+    }
+}
+
+fn main() {
+    println!("{}", longest("rust", "rustacean"));
+}`,
+        exercises: [
+          {
+            id: "advanced-longest-lifetime",
+            title: "Tambahkan lifetime pada longest",
+            difficulty: "Lanjutan",
+            goal: "Perbaiki signature function agar compiler memahami reference mana yang dikembalikan.",
+            focus: [
+              "Lifetime dibutuhkan ketika return value terkait langsung dengan beberapa input reference.",
+              "Annotation cukup ditulis pada signature, bukan di seluruh body function.",
+            ],
+            brokenCode: `fn longest(left: &str, right: &str) -> &str {
+    if left.len() > right.len() {
+        left
+    } else {
+        right
+    }
+}
+
+fn main() {
+    println!("{}", longest("rust", "rustacean"));
+}`,
+            expectedOutput: "rustacean",
+            hints: [
+              "Compiler tahu return value adalah salah satu input, tetapi belum tahu relasinya.",
+              "Cari bentuk lifetime paling umum yang dipakai di contoh function longest.",
+            ],
+            explanation:
+              "Lifetime yang tepat membuat kontrak function menjadi jelas bagi compiler: hasil yang dikembalikan hidup selama input yang relevan juga masih hidup.",
+          },
+        ],
+      },
+      {
+        id: "advanced-attributes-derive",
+        title: "Attribute dan derive untuk metadata compile-time",
+        summary:
+          "Attribute membantu Anda memberi instruksi tambahan ke compiler. Derive adalah bentuk yang sangat praktis karena dapat menambahkan implementasi trait umum tanpa boilerplate panjang.",
+        concepts: [
+          "Attribute ditulis dengan syntax #[...] tepat di atas item yang dipengaruhi.",
+          "derive sering dipakai untuk Debug, Clone, PartialEq, dan trait standar lain.",
+          "Output Debug sangat membantu saat Anda sedang belajar bentuk data baru.",
+        ],
+        walkthrough: [
+          "Mulai dari satu struct kecil yang mudah diprint.",
+          "Tambahkan derive untuk trait yang memang diperlukan oleh cara output yang dipakai.",
+          "Baca error compiler dari macro-like attribute itu sebagai petunjuk trait mana yang belum tersedia.",
+        ],
+        exampleLabel: "Struct dengan derive Debug",
+        exampleCode: `#[derive(Debug)]
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+fn main() {
+    println!("{:?}", Point { x: 1, y: 2 });
+}`,
+        exercises: [
+          {
+            id: "advanced-derive-debug",
+            title: "Aktifkan derive Debug",
+            difficulty: "Lanjutan",
+            goal: "Perbaiki attribute derive agar struct bisa diprint dengan formatter Debug.",
+            focus: [
+              "Debug output memerlukan implementasi trait yang sesuai.",
+              "Derive adalah cara paling cepat untuk menambahkan trait standar pada struct kecil.",
+            ],
+            brokenCode: `struct Point {
+    x: i32,
+    y: i32,
+}
+
+fn main() {
+    println!("{:?}", Point { x: 1, y: 2 });
+}`,
+            expectedOutput: "Point { x: 1, y: 2 }",
+            hints: [
+              "Formatter {:?} menuntut trait tertentu pada struct yang dicetak.",
+              "Cari attribute yang biasa dipakai Rust untuk menghasilkan implementasi otomatis.",
+            ],
+            explanation:
+              "Attribute derive membuat compiler menuliskan implementasi trait umum untuk Anda. Pada tahap belajar, Debug adalah salah satu derive yang paling sering dipakai.",
+          },
+        ],
+      },
+      {
+        id: "advanced-smart-pointers",
+        title: "Smart pointer, dereference, cleanup, dan ownership ganda",
+        summary:
+          "Submodule ini menjadi jembatan ke topik pointer Rust yang lebih kaya. Box, Rc, RefCell, dan Drop punya tujuan berbeda, tetapi semuanya mencoba mengelola kepemilikan data dengan aturan yang eksplisit.",
+        concepts: [
+          "Box memindahkan data ke heap dengan model ownership tunggal yang sederhana.",
+          "Rc memperkenalkan shared ownership, RefCell memberi mutability terkontrol di runtime, dan Drop mengatur cleanup eksplisit.",
+          "Deref membuat smart pointer terasa lebih natural saat dipakai bersama operasi biasa.",
+        ],
+        walkthrough: [
+          "Mulai dari Box dulu sebelum membahas shared ownership yang lebih kompleks.",
+          "Baca dereference sebagai cara mengambil nilai di balik pointer yang aman.",
+          "Gunakan contoh kecil agar fokus tetap pada model kepemilikannya, bukan pada struktur data besar.",
+        ],
+        exampleLabel: "Box dan dereference paling dasar",
+        exampleCode: `fn main() {
+    let value = Box::new(7);
+    println!("{}", *value);
+}`,
+        exercises: [
+          {
+            id: "advanced-rc-clone",
+            title: "Shared ownership dengan Rc",
+            difficulty: "Lanjutan",
+            goal: "Perbaiki pemanggilan Rc::clone agar dua owner bisa memakai nilai yang sama dengan aman.",
+            focus: [
+              "Rc memakai clone pada pointer, bukan menduplikasi seluruh data secara mentah.",
+              "Shared ownership harus diminta secara eksplisit agar niat kodenya jelas.",
+            ],
+            brokenCode: `use std::rc::Rc;
+
+fn main() {
+    let number = Rc::new(7);
+    let shared = Rc::clone(number);
+    println!("{} {}", number, shared);
+}`,
+            expectedOutput: "7 7",
+            hints: [
+              "Cek bentuk argumen yang diharapkan Rc::clone.",
+              "Pointer yang di-clone seharusnya dikirim sebagai reference ke Rc yang sudah ada.",
+            ],
+            explanation:
+              "Rc menambah owner baru ke data yang sama tanpa menyalin isi heap-nya. Bentuk pemanggilan clone yang benar penting agar compiler tahu Anda sedang membagi kepemilikan, bukan memindahkan value.",
+          },
+        ],
+      },
+      {
+        id: "advanced-static-macro",
+        title: "Static dan macro untuk nilai global serta ekspansi pola",
+        summary:
+          "Static dan macro biasanya muncul lebih akhir karena efeknya lebih luas. Submodule ini memberi contoh kecil yang aman: nilai global konstan dan macro sederhana untuk menghasilkan string.",
+        concepts: [
+          "static menyimpan data dengan lifetime selama program berjalan.",
+          "macro_rules! membangun potongan kode dari pola yang dikenali compiler.",
+          "Macro dipanggil dengan tanda seru karena ia bukan function biasa.",
+        ],
+        walkthrough: [
+          "Mulai dari macro yang sangat kecil dan hanya mengembalikan string literal.",
+          "Gunakan hasil macro itu untuk mengisi nilai static agar relasinya terlihat jelas.",
+          "Cetak satu output akhir agar Anda bisa memverifikasi keduanya bekerja bersama.",
+        ],
+        exampleLabel: "Static diisi dari macro kecil",
+        exampleCode: `macro_rules! label {
+    () => {
+        "Rust Lab"
+    };
+}
+
+static APP_NAME: &str = label!();
+
+fn main() {
+    println!("{APP_NAME}");
+}`,
+        exercises: [
+          {
+            id: "advanced-static-macro-call",
+            title: "Panggil macro pada static",
+            difficulty: "Lanjutan",
+            goal: "Perbaiki inisialisasi static agar macro dipanggil dengan bentuk yang benar lalu hasilnya bisa dicetak.",
+            focus: [
+              "Macro dipanggil dengan tanda seru, bahkan saat dipakai di inisialisasi static.",
+              "Static sederhana cocok untuk contoh nilai global yang aman dibaca.",
+            ],
+            brokenCode: `macro_rules! label {
+    () => {
+        "Rust Lab"
+    };
+}
+
+static APP_NAME: &str = label();
+
+fn main() {
+    println!("{APP_NAME}");
+}`,
+            expectedOutput: "Rust Lab",
+            hints: [
+              "Bandingkan bentuk pemanggilan label dengan bentuk pemanggilan println! atau format!.",
+              "Macro tidak dipanggil seperti function biasa.",
+            ],
+            explanation:
+              "Macro dan static sama-sama terasa formal di awal, tetapi contoh kecil membuat polanya mudah dilihat. Begitu macro dipanggil dengan benar, static bisa diinisialisasi tanpa masalah.",
           },
         ],
       },
