@@ -1,6 +1,6 @@
 # Tutorial Rust Web
 
-Web tutorial Rust berbasis Nuxt dengan materi yang dipecah per modul dan submodule. Setiap submodule memiliki contoh kode sendiri dan Rust Lab sendiri untuk memperbaiki syntax error atau compile error langsung dari browser.
+Web tutorial Rust berbasis Nuxt dengan materi yang dipecah per modul. Satu modul bisa memiliki nol, satu, atau banyak submodule sesuai kebutuhan materi. Jika submodule dipakai, setiap submodule dapat memiliki contoh kode sendiri dan Rust Lab sendiri untuk memperbaiki syntax error atau compile error langsung dari browser.
 
 ## Fitur utama
 
@@ -78,7 +78,8 @@ npx playwright test tests/exercise.spec.ts --reporter=line --workers=1
 ## Catatan development
 
 - Materi tutorial diisi dari `data/tutorial.ts`.
-- Jika menambah modul baru, pastikan modul memiliki `submodules` dan setiap submodule memiliki `exercises`.
+- Modul tidak wajib punya submodule. Gunakan `submodules: []` jika materinya lebih tepat disajikan langsung di level modul.
+- Jika menambah submodule, jumlahnya bebas mengikuti kebutuhan materi dan setiap submodule tidak wajib punya exercise.
 - Jika menambah jenis interaksi baru pada Rust Lab, cek kembali integrasi di `components/ExerciseWorkbench.vue` dan `server/api/rust/run.post.ts`.
 - Setelah perubahan pada UI atau data latihan, jalankan minimal `npm run build` dan `npm run test:browser`.
 

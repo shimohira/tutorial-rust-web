@@ -217,6 +217,65 @@ fn main() {
           },
         ],
       },
+      {
+        id: "setup-project-map",
+        title: "Membaca Cargo.toml, src, dan verifikasi kecil",
+        summary:
+          "Setelah toolchain dan command dasar terasa familiar, Anda perlu bisa membaca susunan project minimal dan melakukan verifikasi kecil terhadap asumsi program Anda.",
+        concepts: [
+          "Cargo.toml menyimpan metadata crate dan menjadi pusat konfigurasi project.",
+          "src/main.rs adalah lokasi entry point untuk binary sederhana.",
+          "assert_eq! berguna untuk memverifikasi asumsi kecil sebelum program lanjut ke langkah berikutnya.",
+        ],
+        walkthrough: [
+          "Mulai dari satu helper function yang mendeskripsikan layout project secara ringkas.",
+          "Gunakan assert_eq! untuk memastikan helper itu mengembalikan nilai yang Anda harapkan.",
+          "Cetak status akhir agar terlihat bahwa program lolos sampai selesai dieksekusi.",
+        ],
+        exampleLabel: "Membaca layout project Rust minimal",
+        exampleCode: `// Cargo.toml
+[package]
+name = "belajar-rust"
+version = "0.1.0"
+edition = "2024"
+
+// src/main.rs
+fn project_layout() -> &'static str {
+    "Cargo.toml + src/main.rs"
+}
+
+fn main() {
+    assert_eq!("Cargo.toml + src/main.rs", project_layout());
+    println!("layout siap");
+}`,
+        exercises: [
+          {
+            id: "setup-assert-layout",
+            title: "Validasi layout project dengan assert_eq!",
+            difficulty: "Pemula",
+            goal: "Perbaiki assert_eq! dan pemanggilan helper agar program lolos verifikasi lalu mencetak status layout.",
+            focus: [
+              "assert_eq! adalah macro yang butuh tanda seru dan argumen lengkap.",
+              "Helper function harus dipanggil, bukan dipakai sebagai item function mentah.",
+            ],
+            brokenCode: `fn project_layout() -> &'static str {
+    "Cargo.toml + src/main.rs"
+}
+
+fn main() {
+    assert_eq("Cargo.toml + src/main.rs", project_layout);
+    println!("layout siap");
+}`,
+            expectedOutput: "layout siap",
+            hints: [
+              "Cek bentuk pemanggilan assert_eq! di Rust.",
+              "Lihat apakah project_layout sedang dipanggil atau baru direferensikan.",
+            ],
+            explanation:
+              "assert_eq! memberi verifikasi cepat terhadap asumsi kecil. Setelah macro dan pemanggilan function benar, program lolos validasi lalu mencetak status terakhir.",
+          },
+        ],
+      },
     ],
   },
   {
