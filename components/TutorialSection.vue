@@ -49,6 +49,34 @@ defineProps<{
       </article>
     </div>
 
+    <article
+      v-if="section.references?.length"
+      class="lesson-card docs-card"
+      data-testid="module-doc-links"
+    >
+      <div class="docs-card-head">
+        <div>
+          <p class="eyebrow">Rust docs terkait</p>
+          <h3>Referensi resmi untuk modul ini</h3>
+        </div>
+        <span>{{ section.references.length }} link</span>
+      </div>
+
+      <div class="resource-stack">
+        <a
+          v-for="reference in section.references"
+          :key="reference.url"
+          class="resource-link"
+          :href="reference.url"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <strong>{{ reference.title }}</strong>
+          <p>{{ reference.description }}</p>
+        </a>
+      </div>
+    </article>
+
     <div class="code-split">
       <article class="code-panel">
         <div class="code-header">

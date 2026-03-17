@@ -15,6 +15,7 @@ test("setup module can expose more than two submodules and each lab can run", as
 
   await expect(
     page.getByRole("heading", {
+      level: 1,
       name: /Setup, Cargo, dan cara kerja project Rust/i,
     }),
   ).toBeVisible();
@@ -103,4 +104,18 @@ test("sidebar module menu stays usable on narrow screens", async ({ page }) => {
   ).toBeVisible();
 
   await expect(page.getByTestId("submodule-sidebar-nav")).toBeVisible();
+});
+
+test("related modules expose official Rust docs links", async ({ page }) => {
+  await page.goto("/modules/control-flow");
+
+  const rangeDocsUrl = "https://doc.rust-lang.org/std/ops/index.html#structs";
+  const moduleDocs = page.getByTestId("module-doc-links");
+  const loopDocs = page.getByTestId("submodule-doc-links-control-flow-loops");
+
+  await expect(moduleDocs).toBeVisible();
+  await expect(moduleDocs.locator(`a[href="${rangeDocsUrl}"]`)).toBeVisible();
+
+  await expect(loopDocs).toBeVisible();
+  await expect(loopDocs.locator(`a[href="${rangeDocsUrl}"]`)).toBeVisible();
 });

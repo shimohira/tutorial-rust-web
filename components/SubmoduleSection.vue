@@ -73,6 +73,34 @@ const submoduleProgress = computed(() => {
       </article>
     </div>
 
+    <article
+      v-if="submodule.references?.length"
+      class="lesson-card docs-card submodule-docs-card"
+      :data-testid="`submodule-doc-links-${submodule.id}`"
+    >
+      <div class="docs-card-head">
+        <div>
+          <p class="eyebrow">Rust docs terkait</p>
+          <h3>Referensi resmi untuk submodule ini</h3>
+        </div>
+        <span>{{ submodule.references.length }} link</span>
+      </div>
+
+      <div class="resource-stack">
+        <a
+          v-for="reference in submodule.references"
+          :key="reference.url"
+          class="resource-link"
+          :href="reference.url"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <strong>{{ reference.title }}</strong>
+          <p>{{ reference.description }}</p>
+        </a>
+      </div>
+    </article>
+
     <div class="code-split submodule-code-split">
       <article class="code-panel">
         <div class="code-header">

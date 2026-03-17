@@ -559,6 +559,73 @@ textarea {
   background: rgba(203, 99, 55, 0.08);
 }
 
+.docs-card {
+  margin-top: 18px;
+  background:
+    linear-gradient(180deg, rgba(250, 247, 242, 0.92), rgba(243, 235, 224, 0.92));
+  border: 1px solid rgba(141, 61, 26, 0.12);
+}
+
+.submodule-docs-card {
+  margin-top: 22px;
+}
+
+.docs-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.docs-card-head .eyebrow {
+  margin-bottom: 6px;
+}
+
+.docs-card-head h3 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.docs-card-head span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(17, 76, 65, 0.1);
+  color: #114c41;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.resource-link {
+  display: grid;
+  gap: 6px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(118, 92, 72, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+  color: #1f1b16;
+  text-decoration: none;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.resource-link strong {
+  font-size: 1rem;
+}
+
+.resource-link p {
+  margin: 0;
+  color: #5d5347;
+}
+
+.resource-link:hover {
+  transform: translateY(-2px);
+  border-color: rgba(203, 99, 55, 0.28);
+  background: rgba(255, 250, 245, 0.95);
+}
+
 .bullet-list {
   margin: 0;
   padding-left: 1.18rem;
@@ -877,7 +944,8 @@ textarea {
   .lesson-head,
   .editor-toolbar,
   .terminal-header,
-  .progress-summary-head {
+  .progress-summary-head,
+  .docs-card-head {
     flex-direction: column;
   }
 

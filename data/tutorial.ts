@@ -10,12 +10,19 @@ export interface RustExercise {
   explanation: string;
 }
 
+export interface LessonReference {
+  title: string;
+  url: string;
+  description: string;
+}
+
 export interface LessonSubmodule {
   id: string;
   title: string;
   summary: string;
   concepts: string[];
   walkthrough: string[];
+  references?: LessonReference[];
   exampleLabel: string;
   exampleCode: string;
   exercises: RustExercise[];
@@ -30,11 +37,183 @@ export interface LessonSection {
   deepDive: string[];
   pitfalls: string[];
   checkpoints: string[];
+  references?: LessonReference[];
   codeLabel: string;
   codeExample: string;
   practice: string[];
   submodules: LessonSubmodule[];
 }
+
+const rustDocs: Record<string, LessonReference> = {
+  controlFlowChapter: {
+    title: "The Rust Book: Control Flow",
+    url: "https://doc.rust-lang.org/book/ch03-05-control-flow.html",
+    description:
+      "Ringkasan resmi tentang if expression, loop, while, dan for sebelum masuk ke pola iterasi yang lebih besar.",
+  },
+  rangeStructs: {
+    title: "std::ops: Range dan RangeInclusive",
+    url: "https://doc.rust-lang.org/std/ops/index.html#structs",
+    description:
+      "Dokumentasi range yang dipakai saat iterasi for, slicing, dan pola batas inklusif maupun eksklusif.",
+  },
+  string: {
+    title: "std::string::String",
+    url: "https://doc.rust-lang.org/std/string/struct.String.html",
+    description:
+      "API resmi String untuk membuat, menambah, memotong, dan memanipulasi buffer UTF-8 milik std.",
+  },
+  primitiveStr: {
+    title: "Primitive str",
+    url: "https://doc.rust-lang.org/std/primitive.str.html",
+    description:
+      "Referensi &str beserta method penting yang sering dipakai untuk membaca dan mengolah string slice.",
+  },
+  slicesChapter: {
+    title: "The Rust Book: Slices",
+    url: "https://doc.rust-lang.org/book/ch04-03-slices.html",
+    description:
+      "Penjelasan resmi tentang string slice dan slice umum untuk memahami borrow ke sebagian data.",
+  },
+  structsChapter: {
+    title: "The Rust Book: Structs",
+    url: "https://doc.rust-lang.org/book/ch05-00-structs.html",
+    description:
+      "Panduan resmi untuk struct bernama, tuple struct, dan alasan memakai struct saat model data mulai berkembang.",
+  },
+  methodsChapter: {
+    title: "The Rust Book: Method Syntax",
+    url: "https://doc.rust-lang.org/book/ch05-03-method-syntax.html",
+    description:
+      "Rujukan resmi tentang impl, self, &self, dan method yang menempel pada tipe.",
+  },
+  enumsChapter: {
+    title: "The Rust Book: Enums and Pattern Matching",
+    url: "https://doc.rust-lang.org/book/ch06-00-enums.html",
+    description:
+      "Penjelasan resmi enum, match, dan kenapa exhaustive matching menjadi kekuatan utama Rust.",
+  },
+  modulesChapter: {
+    title: "The Rust Book: Packages, Crates, and Modules",
+    url: "https://doc.rust-lang.org/book/ch07-00-managing-growing-projects-with-packages-crates-and-modules.html",
+    description:
+      "Panduan resmi untuk memetakan crate, module, visibility, dan struktur project Rust yang lebih besar.",
+  },
+  genericsChapter: {
+    title: "The Rust Book: Generic Data Types",
+    url: "https://doc.rust-lang.org/book/ch10-01-syntax.html",
+    description:
+      "Rangkuman resmi generic pada function, struct, enum, dan alasan kapan generic memang layak dipakai.",
+  },
+  traitsChapter: {
+    title: "The Rust Book: Traits",
+    url: "https://doc.rust-lang.org/book/ch10-02-traits.html",
+    description:
+      "Penjelasan resmi trait sebagai kontrak perilaku dan dasar untuk abstraksi API yang fleksibel.",
+  },
+  lifetimesChapter: {
+    title: "The Rust Book: Lifetime Syntax",
+    url: "https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html",
+    description:
+      "Referensi resmi lifetime untuk memahami relasi antar-reference dan kapan anotasi diperlukan.",
+  },
+  closuresChapter: {
+    title: "The Rust Book: Closures",
+    url: "https://doc.rust-lang.org/book/ch13-01-closures.html",
+    description:
+      "Panduan resmi closure, capture dari scope luar, dan cara closure dipakai bersama method library.",
+  },
+  option: {
+    title: "std::option::Option",
+    url: "https://doc.rust-lang.org/std/option/enum.Option.html",
+    description:
+      "Dokumentasi enum Option, method helper-nya, dan pola idiomatis untuk memodelkan nilai yang mungkin kosong.",
+  },
+  iterator: {
+    title: "std::iter::Iterator",
+    url: "https://doc.rust-lang.org/std/iter/trait.Iterator.html",
+    description:
+      "Daftar method iterator inti seperti map, filter, collect, fold, dan adaptor yang paling sering dipakai.",
+  },
+  fmt: {
+    title: "std::fmt",
+    url: "https://doc.rust-lang.org/std/fmt/",
+    description:
+      "Dokumentasi formatting, placeholder, dan trait seperti Display atau Debug untuk output yang rapi.",
+  },
+  vec: {
+    title: "std::vec::Vec",
+    url: "https://doc.rust-lang.org/std/vec/struct.Vec.html",
+    description:
+      "API resmi Vec sebagai collection default untuk data berurutan yang bertambah dinamis.",
+  },
+  hashMap: {
+    title: "std::collections::HashMap",
+    url: "https://doc.rust-lang.org/std/collections/struct.HashMap.html",
+    description:
+      "Dokumentasi HashMap untuk operasi insert, lookup, dan manipulasi data key-value yang umum.",
+  },
+  hashSet: {
+    title: "std::collections::HashSet",
+    url: "https://doc.rust-lang.org/std/collections/struct.HashSet.html",
+    description:
+      "Referensi HashSet saat Anda hanya perlu menyimpan nilai unik tanpa peduli urutan.",
+  },
+  result: {
+    title: "std::result::Result",
+    url: "https://doc.rust-lang.org/std/result/enum.Result.html",
+    description:
+      "Dokumentasi enum Result beserta helper method untuk alur sukses-gagal yang eksplisit.",
+  },
+  recoverableErrorsChapter: {
+    title: "The Rust Book: Recoverable Errors with Result",
+    url: "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html",
+    description:
+      "Penjelasan resmi Result, match pada error, dan pola error handling bertahap yang idiomatis.",
+  },
+  questionMarkOperator: {
+    title: "The Rust Reference: ? operator",
+    url: "https://doc.rust-lang.org/reference/expressions/operator-expr.html#the-question-mark-operator",
+    description:
+      "Rujukan bahasa untuk operator ?, perilaku early return, dan syarat type yang kompatibel.",
+  },
+  deriveReference: {
+    title: "The Rust Reference: derive",
+    url: "https://doc.rust-lang.org/reference/attributes/derive.html",
+    description:
+      "Referensi resmi attribute derive untuk implementasi trait standar seperti Debug, Clone, dan PartialEq.",
+  },
+  deref: {
+    title: "std::ops::Deref",
+    url: "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+    description:
+      "Dokumentasi trait Deref yang menjelaskan bagaimana smart pointer terasa natural saat digunakan.",
+  },
+  rc: {
+    title: "std::rc::Rc",
+    url: "https://doc.rust-lang.org/std/rc/struct.Rc.html",
+    description:
+      "API resmi Rc untuk shared ownership non-thread-safe dan pola clone pointer yang idiomatis.",
+  },
+  refCell: {
+    title: "std::cell::RefCell",
+    url: "https://doc.rust-lang.org/std/cell/struct.RefCell.html",
+    description:
+      "Dokumentasi RefCell untuk interior mutability yang diverifikasi saat runtime.",
+  },
+  staticItems: {
+    title: "The Rust Reference: static items",
+    url: "https://doc.rust-lang.org/reference/items/static-items.html",
+    description:
+      "Rujukan resmi nilai static, lifetime program, dan batasan penting untuk global data di Rust.",
+  },
+  macrosChapter: {
+    title: "The Rust Book: Macros",
+    url: "https://doc.rust-lang.org/book/ch20-05-macros.html",
+    description:
+      "Pengantar resmi macro_rules!, macro derive, dan kapan macro layak dipakai sebagai alat terakhir.",
+  },
+};
 
 export const overviewCards = [
   {
@@ -554,6 +733,7 @@ fn main() {
       "Anda tahu kapan perlu borrow dan kapan memang harus memindahkan value.",
       "Anda paham kenapa slice tidak punya ownership.",
     ],
+    references: [rustDocs.string, rustDocs.primitiveStr, rustDocs.slicesChapter],
     codeLabel: "Fungsi yang aman karena memakai borrow",
     codeExample: `fn first_word(text: &str) -> &str {
     if let Some(index) = text.find(' ') {
@@ -590,6 +770,7 @@ fn main() {
           "Bandingkan pemanggilan function dengan value penuh vs reference.",
           "Cek apakah nilai asli masih bisa dipakai setelah function dipanggil.",
         ],
+        references: [rustDocs.string, rustDocs.primitiveStr],
         exampleLabel: "Borrow string yang aman",
         exampleCode: `fn first_word(text: &str) -> &str {
     if let Some(index) = text.find(' ') {
@@ -761,6 +942,7 @@ fn main() {
           "Perhatikan bahwa function cukup menerima &str, bukan String penuh.",
           "Kembalikan slice agar caller tetap bisa memakai string asli dan hasil potongannya.",
         ],
+        references: [rustDocs.slicesChapter, rustDocs.primitiveStr],
         exampleLabel: "String slice yang aman",
         exampleCode: `fn first_word(text: &str) -> &str {
     &text[..4]
@@ -827,6 +1009,7 @@ fn main() {
       "Anda bisa menulis loop yang mengembalikan nilai lewat break.",
       "Anda tahu kapan lebih baik memakai for daripada while.",
     ],
+    references: [rustDocs.controlFlowChapter, rustDocs.rangeStructs],
     codeLabel: "Expression-oriented flow",
     codeExample: `fn status(score: i32) -> &'static str {
     if score >= 75 { "lulus" } else { "ulang" }
@@ -921,6 +1104,7 @@ fn main() {
           "Pastikan perubahan state terjadi di dalam blok loop, bukan di luar tanpa sengaja.",
           "Gunakan output akhir untuk mengonfirmasi berapa kali loop berjalan.",
         ],
+        references: [rustDocs.rangeStructs],
         exampleLabel: "Loop sederhana dengan kondisi eksplisit",
         exampleCode: `fn main() {
     let mut count = 0;
@@ -1047,6 +1231,7 @@ fn main() {
       "Anda mengerti kenapa match harus exhaustive.",
       "Anda tahu bedanya method dan associated function.",
     ],
+    references: [rustDocs.structsChapter, rustDocs.methodsChapter, rustDocs.enumsChapter],
     codeLabel: "Model data kecil yang idiomatis",
     codeExample: `type UserId = u64;
 
@@ -1092,6 +1277,7 @@ fn role_text(role: Role) -> String {
           "Tambahkan method ringkasan agar logika formatting tidak tercecer di main.",
           "Pastikan signature method valid sebelum melihat isi format string.",
         ],
+        references: [rustDocs.structsChapter, rustDocs.methodsChapter],
         exampleLabel: "Struct dan method label",
         exampleCode: `struct User {
     name: String,
@@ -1166,6 +1352,7 @@ fn main() {
           "Baca setiap arm match sebagai kontrak perilaku untuk satu varian.",
           "Perhatikan pemisah antar-arm karena error kecil di sini sangat umum.",
         ],
+        references: [rustDocs.enumsChapter],
         exampleLabel: "Enum status dan match label",
         exampleCode: `enum Status {
     Draft,
@@ -1296,6 +1483,7 @@ fn main() {
       "Anda paham kapan trait dipakai sebagai kontrak perilaku.",
       "Anda bisa membaca syntax generic dan where clause tanpa bingung.",
     ],
+    references: [rustDocs.modulesChapter, rustDocs.traitsChapter, rustDocs.genericsChapter],
     codeLabel: "Trait plus generic yang sederhana",
     codeExample: `trait Summary {
     fn summary(&self) -> String;
@@ -1334,6 +1522,7 @@ fn print_summary(item: &impl Summary) {
           "Implementasikan trait itu pada satu struct agar pola dasarnya terasa.",
           "Bandingkan deklarasi method pada trait dan deklarasi method saat implementasi.",
         ],
+        references: [rustDocs.traitsChapter],
         exampleLabel: "Trait Summary paling sederhana",
         exampleCode: `trait Summary {
     fn summary(&self) -> String;
@@ -1404,6 +1593,7 @@ fn main() {
           "Pastikan parameter tipe diumumkan di signature function sebelum dipakai.",
           "Biarkan caller menentukan tipe lewat nilai yang dikirim ke function.",
         ],
+        references: [rustDocs.genericsChapter],
         exampleLabel: "Generic function yang sangat kecil",
         exampleCode: `fn first_item<T>(items: &[T]) -> &T {
     &items[0]
@@ -1456,6 +1646,7 @@ fn main() {
           "Buka hanya function yang memang perlu dipakai dari luar.",
           "Panggil function lewat path module agar relasi namanya terasa jelas.",
         ],
+        references: [rustDocs.modulesChapter],
         exampleLabel: "Module kecil dengan satu member publik",
         exampleCode: `mod greeting {
     pub fn text() -> &'static str {
@@ -1524,6 +1715,13 @@ fn main() {
       "Anda nyaman membangun Vec dan HashMap untuk data sederhana.",
       "Anda bisa membaca iterator chain tanpa merasa itu 'sihir'.",
     ],
+    references: [
+      rustDocs.option,
+      rustDocs.iterator,
+      rustDocs.string,
+      rustDocs.fmt,
+      rustDocs.closuresChapter,
+    ],
     codeLabel: "Vec, iterator, dan HashMap bersama",
     codeExample: `use std::collections::HashMap;
 
@@ -1562,6 +1760,7 @@ fn main() {
           "Baca Some dan None sebagai dua jalur perilaku yang sama-sama valid.",
           "Pastikan setiap arm match dipisahkan dengan jelas.",
         ],
+        references: [rustDocs.option],
         exampleLabel: "Option dibuka dengan match",
         exampleCode: `fn describe(value: Option<&str>) -> &str {
     match value {
@@ -1618,6 +1817,7 @@ fn main() {
           "Pastikan setiap method call tertutup sebelum berpindah ke method berikutnya.",
           "Gunakan output Debug sederhana untuk memastikan bentuk hasil akhir.",
         ],
+        references: [rustDocs.iterator],
         exampleLabel: "Vec diubah lewat iterator chain",
         exampleCode: `fn main() {
     let numbers = vec![1, 2, 3, 4];
@@ -1672,6 +1872,7 @@ fn main() {
           "Pisahkan transformasi string dari baris formatting akhir agar alurnya mudah dibaca.",
           "Gunakan output tunggal untuk memastikan hasil manipulasi memang sesuai target.",
         ],
+        references: [rustDocs.string, rustDocs.primitiveStr, rustDocs.fmt],
         exampleLabel: "Formatting string yang paling sering dipakai",
         exampleCode: `fn main() {
     let name = "Rust";
@@ -1718,6 +1919,7 @@ fn main() {
           "Gunakan HashMap kecil agar relasi key-value langsung terasa.",
           "Cetak satu nilai hasil lookup sederhana untuk memastikan struktur datanya terisi benar.",
         ],
+        references: [rustDocs.vec, rustDocs.hashMap, rustDocs.hashSet],
         exampleLabel: "HashMap kecil untuk key-value dasar",
         exampleCode: `use std::collections::HashMap;
 
@@ -1782,6 +1984,14 @@ fn main() {
       "Anda bisa menjelaskan Box, Rc, dan RefCell dalam satu kalimat masing-masing.",
       "Anda tahu kenapa macro sebaiknya menjadi alat terakhir, bukan pilihan pertama.",
     ],
+    references: [
+      rustDocs.result,
+      rustDocs.lifetimesChapter,
+      rustDocs.deriveReference,
+      rustDocs.deref,
+      rustDocs.staticItems,
+      rustDocs.macrosChapter,
+    ],
     codeLabel: "Result plus operator tanya",
     codeExample: `fn divide(a: i32, b: i32) -> Result<i32, String> {
     if b == 0 {
@@ -1816,6 +2026,7 @@ fn main() -> Result<(), String> {
           "Periksa jalur Err lebih dulu, lalu pastikan jalur Ok ditutup dengan benar.",
           "Gunakan output sederhana untuk memastikan hasil sukses memang tercetak.",
         ],
+        references: [rustDocs.result, rustDocs.recoverableErrorsChapter],
         exampleLabel: "Result paling kecil",
         exampleCode: `fn divide(a: i32, b: i32) -> Result<i32, String> {
     if b == 0 {
@@ -1874,6 +2085,7 @@ fn main() {
           "Pastikan jalur sukses function pemanggil diakhiri dengan Ok(()).",
           "Gunakan parse integer sebagai contoh error propagation yang mudah diverifikasi.",
         ],
+        references: [rustDocs.questionMarkOperator, rustDocs.result],
         exampleLabel: "Propagasi error dengan tanda tanya",
         exampleCode: `fn parse_number(text: &str) -> Result<i32, std::num::ParseIntError> {
     let value = text.parse::<i32>()?;
@@ -1929,6 +2141,7 @@ fn main() {
           "Cari dulu lokasi compiler kehilangan informasi relasi antar-reference.",
           "Tambahkan annotation sesingkat mungkin, hanya di tempat yang memang dibutuhkan.",
         ],
+        references: [rustDocs.lifetimesChapter],
         exampleLabel: "Lifetime pada function longest",
         exampleCode: `fn longest<'a>(left: &'a str, right: &'a str) -> &'a str {
     if left.len() > right.len() {
@@ -1987,6 +2200,7 @@ fn main() {
           "Tambahkan derive untuk trait yang memang diperlukan oleh cara output yang dipakai.",
           "Baca error compiler dari macro-like attribute itu sebagai petunjuk trait mana yang belum tersedia.",
         ],
+        references: [rustDocs.deriveReference],
         exampleLabel: "Struct dengan derive Debug",
         exampleCode: `#[derive(Debug)]
 struct Point {
@@ -2040,6 +2254,7 @@ fn main() {
           "Baca dereference sebagai cara mengambil nilai di balik pointer yang aman.",
           "Gunakan contoh kecil agar fokus tetap pada model kepemilikannya, bukan pada struktur data besar.",
         ],
+        references: [rustDocs.deref, rustDocs.rc, rustDocs.refCell],
         exampleLabel: "Box dan dereference paling dasar",
         exampleCode: `fn main() {
     let value = Box::new(7);
@@ -2087,6 +2302,7 @@ fn main() {
           "Gunakan hasil macro itu untuk mengisi nilai static agar relasinya terlihat jelas.",
           "Cetak satu output akhir agar Anda bisa memverifikasi keduanya bekerja bersama.",
         ],
+        references: [rustDocs.staticItems, rustDocs.macrosChapter],
         exampleLabel: "Static diisi dari macro kecil",
         exampleCode: `macro_rules! label {
     () => {
