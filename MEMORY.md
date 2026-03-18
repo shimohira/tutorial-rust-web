@@ -40,6 +40,16 @@ Lalu minta thread baru untuk membaca `MEMORY.md` terlebih dahulu.
   - smoke test Playwright untuk submodule labs
 - `assets/css/main.css`
   - styling utama
+- `composables/useTutorialPreferences.ts`
+  - state preferensi global untuk bahasa dan tema
+- `composables/useTutorialUi.ts`
+  - selector copy UI berdasarkan locale aktif
+- `composables/useTutorialContent.ts`
+  - selector konten tutorial yang locale-aware
+- `data/ui.ts`
+  - kamus copy UI untuk Indonesia dan English
+- `data/tutorial.en.ts`
+  - overlay English untuk overview, roadmap, judul/summary modul, submodule, dan exercise
 
 ## Status implementasi terakhir
 
@@ -69,6 +79,15 @@ Lalu minta thread baru untuk membaca `MEMORY.md` terlebih dahulu.
 - Materi collection sekarang dipisah ke modul khusus `collections` agar `Sequence`, `Maps`, dan `Sets` punya ruang belajar sendiri.
 - Jumlah submodule sekarang lebih variatif: `syntax` 4, `ownership` 4, `control-flow` 3, `modeling` 3, `abstraction` 3, `stdlib` 3, `collections` 3, dan `advanced` 6.
 - README dan `.gitignore` sudah ditambahkan.
+- Tutorial sekarang mendukung dua bahasa: Indonesia dan English.
+- Default locale saat pertama kali membuka app adalah Indonesia.
+- Preferensi bahasa dan tema disimpan lokal di browser memakai key `rust-study-preferences`.
+- Sekarang ada floating control kecil yang sticky di kanan bawah untuk mengganti bahasa dan theme tanpa meninggalkan halaman.
+- Theme yang tersedia ada tiga: `light`, `dark`, dan `reading`.
+- `app.vue` sekarang melakukan bootstrap preferensi sebelum hydration agar atribut `lang` dan `data-theme` pada root document mengikuti preferensi terakhir user.
+- `useTutorialUi.ts` + `data/ui.ts` dipakai untuk melokalisasi copy UI, label panel, navigasi modul, lab, dan floating control.
+- `useTutorialContent.ts` + `data/tutorial.en.ts` dipakai untuk melokalisasi katalog utama, roadmap, judul/summary modul, judul/summary submodule, serta judul/goal/difficulty exercise.
+- Scope English saat ini belum 100% penuh di semua butir materi terdalam; item yang belum punya override masih fallback ke konten dasar di `data/tutorial.ts`.
 
 ## Verifikasi terakhir
 
@@ -93,6 +112,7 @@ Hasil terakhir:
 - test juga memverifikasi panel perbandingan lintas modul muncul pada submodule seperti `ownership-borrowing` dan `stdlib-option`
 - code block pada panel contoh penggunaan sekarang bisa scroll horizontal di dalam panel, sehingga baris Rust yang panjang tidak pecah atau meluber ke card sebelah
 - build dan test terakhir tetap lolos setelah ekspansi materi/submodule besar di `data/tutorial.ts`
+- test sekarang juga memverifikasi floating controls bisa mengganti bahasa ke English, mengganti theme ke `dark` lalu `reading`, dan memastikan preferensi tetap tersimpan setelah reload
 
 ## Catatan environment
 
