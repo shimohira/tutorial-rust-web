@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { useTutorialUi } from "~/composables/useTutorialUi";
 import type { LessonSection } from "~/data/tutorial";
 
 defineProps<{
   section: LessonSection;
 }>();
+
+const ui = useTutorialUi();
 </script>
 
 <template>
@@ -13,7 +16,7 @@ defineProps<{
         <p class="eyebrow">{{ section.badge }}</p>
         <h2>{{ section.title }}</h2>
       </div>
-      <div class="lesson-badge">Rust Core</div>
+      <div class="lesson-badge">{{ ui.common.rustCore }}</div>
     </div>
 
     <p class="section-copy">
@@ -22,7 +25,7 @@ defineProps<{
 
     <div class="lesson-grid">
       <article class="lesson-card">
-        <h3>Fondasi materi</h3>
+        <h3>{{ ui.tutorialSection.foundations }}</h3>
         <ul class="bullet-list">
           <li v-for="item in section.foundations" :key="item">
             {{ item }}
@@ -31,7 +34,7 @@ defineProps<{
       </article>
 
       <article class="lesson-card">
-        <h3>Detail yang perlu diperhatikan</h3>
+        <h3>{{ ui.tutorialSection.deepDive }}</h3>
         <ul class="bullet-list">
           <li v-for="item in section.deepDive" :key="item">
             {{ item }}
@@ -40,7 +43,7 @@ defineProps<{
       </article>
 
       <article class="lesson-card warning-card">
-        <h3>Jebakan umum</h3>
+        <h3>{{ ui.tutorialSection.pitfalls }}</h3>
         <ul class="bullet-list">
           <li v-for="item in section.pitfalls" :key="item">
             {{ item }}
@@ -56,10 +59,10 @@ defineProps<{
     >
       <div class="docs-card-head">
         <div>
-          <p class="eyebrow">Rust docs terkait</p>
-          <h3>Referensi resmi untuk modul ini</h3>
+          <p class="eyebrow">{{ ui.common.relatedDocs }}</p>
+          <h3>{{ ui.common.officialReferencesModule }}</h3>
         </div>
-        <span>{{ section.references.length }} link</span>
+        <span>{{ section.references.length }} {{ ui.common.linkSuffix }}</span>
       </div>
 
       <div class="resource-stack">
@@ -81,14 +84,14 @@ defineProps<{
       <article class="code-panel">
         <div class="code-header">
           <span>{{ section.codeLabel }}</span>
-          <span>Contoh ringkas</span>
+          <span>{{ ui.common.briefExample }}</span>
         </div>
         <pre><code>{{ section.codeExample }}</code></pre>
       </article>
 
       <div class="lesson-side">
         <article class="lesson-card">
-          <h3>Checkpoint</h3>
+          <h3>{{ ui.tutorialSection.checkpoint }}</h3>
           <ul class="bullet-list">
             <li v-for="item in section.checkpoints" :key="item">
               {{ item }}
@@ -97,7 +100,7 @@ defineProps<{
         </article>
 
         <article class="lesson-card">
-          <h3>Latihan lanjutan</h3>
+          <h3>{{ ui.tutorialSection.practice }}</h3>
           <ul class="bullet-list">
             <li v-for="item in section.practice" :key="item">
               {{ item }}

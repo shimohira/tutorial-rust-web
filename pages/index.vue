@@ -1,33 +1,33 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import {
-  getModuleExercisesById,
-  lessonSections,
-  overviewCards,
-  roadmapPhases,
-} from "~/data/tutorial";
+import { useTutorialContent } from "~/composables/useTutorialContent";
+import { useTutorialUi } from "~/composables/useTutorialUi";
 
 const { getModuleProgress, getOverallProgress } = useTutorialProgress();
+const { getModuleExercisesById, lessonSections, overviewCards, roadmapPhases } = useTutorialContent();
+const ui = useTutorialUi();
 
-useHead({
-  title: "Rust Study Deck",
+useHead(() => ({
+  title: ui.value.landing.pageTitle,
   meta: [
     {
       name: "description",
       content:
-        "Katalog modul Rust dengan halaman terpisah per modul dan Rust Lab yang sesuai dengan topiknya.",
+        ui.value.landing.heroText,
     },
   ],
-});
-
-const moduleBlueprints = lessonSections.map((section) => ({
-  ...section,
-  submoduleCount: section.submodules.length,
-  exerciseCount: getModuleExercisesById(section.id).length,
 }));
 
+const moduleBlueprints = computed(() => {
+  return lessonSections.value.map((section) => ({
+    ...section,
+    submoduleCount: section.submodules.length,
+    exerciseCount: getModuleExercisesById(section.id).length,
+  }));
+});
+
 const moduleCards = computed(() => {
-  return moduleBlueprints.map((section) => {
+  return moduleBlueprints.value.map((section) => {
     const progress = getModuleProgress(section.id, section.submodules);
 
     return {
@@ -39,34 +39,36 @@ const moduleCards = computed(() => {
   });
 });
 
-const overallProgress = computed(() => getOverallProgress(lessonSections));
-const totalSubmodules = moduleBlueprints.reduce((sum, module) => sum + module.submoduleCount, 0);
-const totalLabs = moduleBlueprints.reduce((sum, module) => sum + module.exerciseCount, 0);
+const overallProgress = computed(() => getOverallProgress(lessonSections.value));
+const totalSubmodules = computed(() => {
+  return moduleBlueprints.value.reduce((sum, module) => sum + module.submoduleCount, 0);
+});
+const totalLabs = computed(() => {
+  return moduleBlueprints.value.reduce((sum, module) => sum + module.exerciseCount, 0);
+});
 </script>
 
 <template>
   <div class="page-shell landing-shell">
     <header class="hero landing-hero">
       <div class="hero-copy">
-        <p class="eyebrow">Nuxt edition</p>
-        <h1>Belajar Rust per modul, dengan lab yang langsung nyambung ke materinya.</h1>
+        <p class="eyebrow">{{ ui.landing.eyebrow }}</p>
+        <h1>{{ ui.landing.heroTitle }}</h1>
         <p class="hero-text">
-          Halaman utama ini sekarang berfungsi sebagai katalog belajar. Setiap
-          modul punya halaman tersendiri, materi yang lebih fokus, dan Rust Lab
-          yang hanya berisi latihan sesuai topik modul tersebut.
+          {{ ui.landing.heroText }}
         </p>
 
         <div class="hero-metrics">
           <div>
-            <span>Modul</span>
-            <strong>{{ moduleCards.length }} halaman</strong>
+            <span>{{ ui.landing.modulesLabel }}</span>
+            <strong>{{ moduleCards.length }} {{ ui.landing.pagesSuffix }}</strong>
           </div>
           <div>
-            <span>Submodule selesai</span>
+            <span>{{ ui.landing.completedSubmodulesLabel }}</span>
             <strong>{{ overallProgress.completedSubmodules }} / {{ totalSubmodules }}</strong>
           </div>
           <div>
-            <span>Rust Lab selesai</span>
+            <span>{{ ui.landing.completedLabsLabel }}</span>
             <strong>{{ overallProgress.solvedExercises }} / {{ totalLabs }}</strong>
           </div>
         </div>
@@ -74,20 +76,16 @@ const totalLabs = moduleBlueprints.reduce((sum, module) => sum + module.exercise
 
       <div class="hero-stack">
         <section class="panel panel-dark">
-          <p class="eyebrow">Pola belajar</p>
+          <p class="eyebrow">{{ ui.landing.studyPatternEyebrow }}</p>
           <ul class="bullet-list">
-            <li>Buka satu modul, baca materi, lalu jalankan lab modul itu.</li>
-            <li>Perbaiki compile error sampai output sesuai target.</li>
-            <li>Pindah ke modul berikutnya setelah checkpoint modul saat ini terasa nyaman.</li>
-            <li>Gunakan halaman utama hanya sebagai peta dan pintu masuk modul.</li>
+            <li v-for="item in ui.landing.studyPattern" :key="item">{{ item }}</li>
           </ul>
         </section>
 
         <section class="panel accent-panel">
-          <p class="eyebrow">Arah materi</p>
+          <p class="eyebrow">{{ ui.landing.directionEyebrow }}</p>
           <p>
-            Urutan modul sengaja bergerak dari grammar dasar ke aliran data,
-            lalu ke pemodelan, abstraction, standard library, dan topik lanjut.
+            {{ ui.landing.directionCopy }}
           </p>
         </section>
       </div>
@@ -96,8 +94,8 @@ const totalLabs = moduleBlueprints.reduce((sum, module) => sum + module.exercise
     <main class="main-stack">
       <section class="panel">
         <div class="section-header">
-          <p class="eyebrow">Module Directory</p>
-          <h2>Pilih modul yang ingin dipelajari</h2>
+          <p class="eyebrow">{{ ui.landing.directoryEyebrow }}</p>
+          <h2>{{ ui.landing.directoryTitle }}</h2>
         </div>
 
         <div class="module-grid">
@@ -114,15 +112,18 @@ const totalLabs = moduleBlueprints.reduce((sum, module) => sum + module.exercise
               <span>
                 {{
                   module.submoduleCount > 0
-                    ? `${module.completedSubmodules} / ${module.submoduleCount} submodule selesai`
-                    : "Materi langsung tanpa submodule"
+                    ? ui.landing.formatCompletedSubmodules(
+                      module.completedSubmodules,
+                      module.submoduleCount,
+                    )
+                    : ui.common.directMaterial
                 }}
               </span>
               <span>
                 {{
                   module.exerciseCount > 0
-                    ? `${module.solvedExercises} / ${module.exerciseCount} lab selesai`
-                    : "Belum ada Rust Lab"
+                    ? ui.landing.formatCompletedLabs(module.solvedExercises, module.exerciseCount)
+                    : ui.common.noLab
                 }}
               </span>
             </div>
@@ -130,9 +131,9 @@ const totalLabs = moduleBlueprints.reduce((sum, module) => sum + module.exercise
               <span :style="{ width: `${module.completionRatio * 100}%` }" />
             </div>
             <div class="module-card-meta">
-              <span>{{ module.submoduleCount > 0 ? `${module.submoduleCount} submodule` : "Materi langsung" }}</span>
-              <span>{{ module.exerciseCount > 0 ? `${module.exerciseCount} lab` : "Tanpa lab" }}</span>
-              <span>Buka modul</span>
+              <span>{{ ui.landing.formatSubmoduleCount(module.submoduleCount) }}</span>
+              <span>{{ ui.landing.formatExerciseCount(module.exerciseCount) }}</span>
+              <span>{{ ui.common.openModule }}</span>
             </div>
           </NuxtLink>
         </div>
@@ -140,8 +141,8 @@ const totalLabs = moduleBlueprints.reduce((sum, module) => sum + module.exercise
 
       <section class="panel">
         <div class="section-header">
-          <p class="eyebrow">Overview</p>
-          <h2>Pondasi belajar sebelum masuk ke halaman modul</h2>
+          <p class="eyebrow">{{ ui.landing.overviewEyebrow }}</p>
+          <h2>{{ ui.landing.overviewTitle }}</h2>
         </div>
 
         <div class="overview-grid">

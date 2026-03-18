@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import ExerciseWorkbench from "~/components/ExerciseWorkbench.vue";
-import { getSubmoduleUsageExamplesById } from "~/data/tutorial";
+import { useTutorialContent } from "~/composables/useTutorialContent";
+import { useTutorialUi } from "~/composables/useTutorialUi";
 import type { LessonSubmodule } from "~/data/tutorial";
 
 const props = defineProps<{
@@ -12,13 +13,15 @@ const props = defineProps<{
 }>();
 
 const { getSubmoduleProgress } = useTutorialProgress();
+const tutorialContent = useTutorialContent();
+const ui = useTutorialUi();
 
 const submoduleProgress = computed(() => {
   return getSubmoduleProgress(props.moduleId, props.submodule);
 });
 
 const usageExamples = computed(() => {
-  return getSubmoduleUsageExamplesById(props.submodule.id);
+  return tutorialContent.getSubmoduleUsageExamplesById(props.submodule.id);
 });
 </script>
 
@@ -30,7 +33,7 @@ const usageExamples = computed(() => {
   >
     <div class="lesson-head">
       <div>
-        <p class="eyebrow">{{ moduleBadge }} • Submodule {{ index + 1 }}</p>
+        <p class="eyebrow">{{ ui.submoduleSection.formatSubmoduleEyebrow(moduleBadge, index + 1) }}</p>
         <h2>{{ submodule.title }}</h2>
       </div>
       <div
@@ -38,7 +41,14 @@ const usageExamples = computed(() => {
         :class="{ 'lesson-badge-complete': submoduleProgress.isCompleted }"
         :data-testid="`submodule-progress-${submodule.id}`"
       >
-        {{ submoduleProgress.isCompleted ? "Selesai" : `${submoduleProgress.solvedExercises}/${submoduleProgress.totalExercises} lab` }}
+        {{
+          submoduleProgress.isCompleted
+            ? ui.submoduleSection.completed
+            : ui.submoduleSection.formatLabProgress(
+              submoduleProgress.solvedExercises,
+              submoduleProgress.totalExercises,
+            )
+        }}
       </div>
     </div>
 
@@ -53,14 +63,16 @@ const usageExamples = computed(() => {
     <p class="submodule-progress-copy">
       {{
         submoduleProgress.isCompleted
-          ? "Semua latihan di submodule ini sudah selesai."
-          : `Selesaikan ${submoduleProgress.totalExercises - submoduleProgress.solvedExercises} latihan lagi untuk menutup submodule ini.`
+          ? ui.submoduleSection.allExercisesDone
+          : ui.submoduleSection.formatRemainingExercises(
+            submoduleProgress.totalExercises - submoduleProgress.solvedExercises,
+          )
       }}
     </p>
 
     <div class="submodule-grid">
       <article class="lesson-card">
-        <h3>Konsep inti</h3>
+        <h3>{{ ui.submoduleSection.concepts }}</h3>
         <ul class="bullet-list">
           <li v-for="item in submodule.concepts" :key="item">
             {{ item }}
@@ -69,7 +81,7 @@ const usageExamples = computed(() => {
       </article>
 
       <article class="lesson-card">
-        <h3>Cara membaca submodule ini</h3>
+        <h3>{{ ui.submoduleSection.walkthrough }}</h3>
         <ul class="bullet-list">
           <li v-for="item in submodule.walkthrough" :key="item">
             {{ item }}
@@ -85,10 +97,10 @@ const usageExamples = computed(() => {
     >
       <div class="docs-card-head">
         <div>
-          <p class="eyebrow">Rust docs terkait</p>
-          <h3>Referensi resmi untuk submodule ini</h3>
+          <p class="eyebrow">{{ ui.common.relatedDocs }}</p>
+          <h3>{{ ui.common.officialReferencesSubmodule }}</h3>
         </div>
-        <span>{{ submodule.references.length }} link</span>
+        <span>{{ submodule.references.length }} {{ ui.common.linkSuffix }}</span>
       </div>
 
       <div class="resource-stack">
@@ -113,10 +125,10 @@ const usageExamples = computed(() => {
     >
       <div class="docs-card-head">
         <div>
-          <p class="eyebrow">Contoh penggunaan</p>
-          <h3>Kasus pakai yang lebih dekat ke situasi nyata</h3>
+          <p class="eyebrow">{{ ui.common.usageExamples }}</p>
+          <h3>{{ ui.common.realUseCases }}</h3>
         </div>
-        <span>{{ usageExamples.length }} contoh</span>
+        <span>{{ usageExamples.length }} {{ ui.submoduleSection.allUsageCount }}</span>
       </div>
 
       <div class="usage-grid">
@@ -139,7 +151,7 @@ const usageExamples = computed(() => {
             <article class="code-panel usage-code-panel">
               <div class="code-header">
                 <span>{{ usage.comparison.withoutLabel }}</span>
-                <span>Sebelum solusi</span>
+                <span>{{ ui.common.beforeSolution }}</span>
               </div>
               <pre><code>{{ usage.comparison.withoutCode }}</code></pre>
             </article>
@@ -147,7 +159,7 @@ const usageExamples = computed(() => {
             <article class="code-panel usage-code-panel">
               <div class="code-header">
                 <span>{{ usage.comparison.withLabel }}</span>
-                <span>Setelah solusi</span>
+                <span>{{ ui.common.afterSolution }}</span>
               </div>
               <pre><code>{{ usage.comparison.withCode }}</code></pre>
             </article>
@@ -156,7 +168,7 @@ const usageExamples = computed(() => {
           <article v-else class="code-panel usage-code-panel">
             <div class="code-header">
               <span>{{ usage.title }}</span>
-              <span>Contoh pakai</span>
+              <span>{{ ui.common.exampleUsage }}</span>
             </div>
             <pre><code>{{ usage.code }}</code></pre>
           </article>
@@ -175,14 +187,14 @@ const usageExamples = computed(() => {
       <article class="code-panel">
         <div class="code-header">
           <span>{{ submodule.exampleLabel }}</span>
-          <span>Contoh submodule</span>
+          <span>{{ ui.common.submoduleExample }}</span>
         </div>
         <pre><code>{{ submodule.exampleCode }}</code></pre>
       </article>
 
       <div class="lesson-side">
         <article class="lesson-card submodule-note-card">
-          <h3>Target latihan</h3>
+          <h3>{{ ui.submoduleSection.goals }}</h3>
           <ul class="bullet-list">
             <li v-for="exercise in submodule.exercises" :key="exercise.id">
               {{ exercise.goal }}
@@ -191,7 +203,7 @@ const usageExamples = computed(() => {
         </article>
 
         <article class="lesson-card submodule-note-card">
-          <h3>Yang perlu diperhatikan</h3>
+          <h3>{{ ui.submoduleSection.focus }}</h3>
           <ul class="bullet-list">
             <li v-for="exercise in submodule.exercises" :key="`${exercise.id}-focus`">
               {{ exercise.focus[0] }}

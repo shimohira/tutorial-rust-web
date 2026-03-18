@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from "vue";
+import { useTutorialUi } from "~/composables/useTutorialUi";
 import type { RustExercise } from "~/data/tutorial";
 
 interface RunnerResponse {
@@ -17,6 +18,7 @@ const props = defineProps<{
 }>();
 
 const { isExerciseSolved, markExerciseSolved } = useTutorialProgress();
+const ui = useTutorialUi();
 const selectedId = ref(props.exercises[0]?.id ?? "");
 const drafts = reactive<Record<string, string>>({});
 const status = ref<"idle" | "running">("idle");
@@ -67,30 +69,30 @@ const currentExerciseCompleted = computed(() => {
 
 const resultTitle = computed(() => {
   if (status.value === "running") {
-    return "Menjalankan compiler...";
+    return ui.value.lab.runningTitle;
   }
 
   if (!result.value && currentExerciseCompleted.value) {
-    return "Latihan ini sudah selesai";
+    return ui.value.lab.completedTitle;
   }
 
   if (!result.value) {
-    return "Belum dijalankan";
+    return ui.value.lab.notRunYet;
   }
 
   if (isSolved.value) {
-    return "Latihan selesai";
+    return ui.value.lab.solvedTitle;
   }
 
   if (result.value.ok) {
-    return "Program berjalan, tetapi output belum sesuai";
+    return ui.value.lab.outputMismatch;
   }
 
   if (result.value.stage === "compile") {
-    return "Masih ada error kompilasi";
+    return ui.value.lab.compileError;
   }
 
-  return "Program gagal dieksekusi";
+  return ui.value.lab.runError;
 });
 
 watch(selectedId, () => {
@@ -141,11 +143,11 @@ async function runCode() {
       error !== null &&
       "data" in error &&
       typeof error.data === "object" &&
-      error.data !== null &&
-      "statusMessage" in error.data &&
-      typeof error.data.statusMessage === "string"
+        error.data !== null &&
+        "statusMessage" in error.data &&
+        typeof error.data.statusMessage === "string"
         ? error.data.statusMessage
-        : "Runner lokal gagal dijalankan.";
+        : ui.value.lab.localRunnerFailed;
 
     result.value = {
       ok: false,
@@ -194,33 +196,33 @@ function revealHint() {
         <span>{{ exercise.title }}</span>
         <small>{{ exercise.difficulty }}</small>
         <small v-if="exerciseCompleted(exercise.id)" class="tab-status">
-          Sudah selesai
+          {{ ui.lab.alreadyDone }}
         </small>
       </button>
     </div>
 
     <div class="lab-grid" v-if="currentExercise">
       <section class="lesson-card lab-info">
-        <p class="eyebrow">Lab</p>
+        <p class="eyebrow">{{ ui.lab.labEyebrow }}</p>
         <h3>{{ currentExercise.title }}</h3>
         <p class="lab-goal">{{ currentExercise.goal }}</p>
 
         <div class="pill-row">
           <span class="meta-pill">{{ currentExercise.difficulty }}</span>
-          <span class="meta-pill">Expected: {{ currentExercise.expectedOutput }}</span>
+          <span class="meta-pill">{{ ui.lab.expected }}: {{ currentExercise.expectedOutput }}</span>
           <span
             :class="currentExerciseCompleted ? 'success-pill' : 'meta-pill'"
             data-testid="exercise-progress-status"
           >
-            {{ currentExerciseCompleted ? "Status: selesai" : "Status: belum selesai" }}
+            {{ currentExerciseCompleted ? ui.lab.statusDone : ui.lab.statusTodo }}
           </span>
           <span class="meta-pill">
-            {{ solvedExerciseCount }} / {{ exercises.length }} latihan selesai
+            {{ solvedExerciseCount }} / {{ exercises.length }} {{ ui.lab.exercisesDoneSuffix }}
           </span>
         </div>
 
         <div class="lab-focus">
-          <h4>Yang sedang diuji</h4>
+          <h4>{{ ui.lab.focusTitle }}</h4>
           <ul class="bullet-list">
             <li v-for="item in currentExercise.focus" :key="item">
               {{ item }}
@@ -229,7 +231,7 @@ function revealHint() {
         </div>
 
         <div class="lab-focus">
-          <h4>Hint bertahap</h4>
+          <h4>{{ ui.lab.hintsTitle }}</h4>
           <ol class="bullet-list">
             <li
               v-for="(hint, index) in currentExercise.hints.slice(0, visibleHintCount)"
@@ -242,25 +244,24 @@ function revealHint() {
             </li>
           </ol>
           <button type="button" class="ghost-button" @click="revealHint">
-            Tampilkan hint berikutnya
+            {{ ui.lab.revealHint }}
           </button>
         </div>
 
         <p class="lab-note">
-          Runner ini mengeksekusi <code>rustc</code> lokal melalui server Nuxt.
-          Gunakan untuk pembelajaran lokal, bukan untuk kode yang tidak dipercaya.
+          {{ ui.lab.runnerNote }}
         </p>
         <p v-if="currentExerciseCompleted && !result" class="lab-note progress-note">
-          Status selesai disimpan di browser ini. Anda bisa mengulang latihan kapan saja.
+          {{ ui.lab.savedProgress }}
         </p>
       </section>
 
       <section class="editor-panel">
         <div class="editor-toolbar">
-          <strong>Rust Playground Mini</strong>
+          <strong>{{ ui.lab.playgroundTitle }}</strong>
           <div class="toolbar-actions">
             <button type="button" class="ghost-button" @click="resetCode">
-              Reset kode
+              {{ ui.lab.resetCode }}
             </button>
             <button
               type="button"
@@ -269,7 +270,7 @@ function revealHint() {
               :disabled="status === 'running'"
               @click="runCode"
             >
-              {{ status === "running" ? "Menjalankan..." : "Jalankan kode" }}
+              {{ status === "running" ? ui.lab.runningCode : ui.lab.runCode }}
             </button>
           </div>
         </div>
@@ -289,18 +290,18 @@ function revealHint() {
         <div class="terminal-panel">
           <div class="terminal-header">
             <strong>{{ resultTitle }}</strong>
-            <span v-if="currentExerciseCompleted" class="success-pill">Output sesuai</span>
+            <span v-if="currentExerciseCompleted" class="success-pill">{{ ui.lab.matchesOutput }}</span>
           </div>
 
-          <pre class="terminal-output" data-testid="terminal-output">{{ result?.stderr || result?.stdout || "Jalankan kode untuk melihat hasil compile atau output program." }}</pre>
+          <pre class="terminal-output" data-testid="terminal-output">{{ result?.stderr || result?.stdout || ui.lab.terminalPlaceholder }}</pre>
 
           <div v-if="result?.ok && result.stdout" class="stdout-panel">
-            <h4>Stdout</h4>
+            <h4>{{ ui.lab.stdout }}</h4>
             <pre>{{ result.stdout }}</pre>
           </div>
 
           <div v-if="currentExerciseCompleted && currentExercise" class="success-panel">
-            <h4>Kenapa solusi ini benar</h4>
+            <h4>{{ ui.lab.whyItWorks }}</h4>
             <p>{{ currentExercise.explanation }}</p>
           </div>
         </div>
@@ -308,7 +309,7 @@ function revealHint() {
     </div>
 
     <p v-else class="section-copy">
-      Belum ada latihan untuk bagian ini.
+      {{ ui.lab.noExerciseYet }}
     </p>
   </div>
 </template>
