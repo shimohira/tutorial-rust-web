@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import ExerciseWorkbench from "~/components/ExerciseWorkbench.vue";
+import { getSubmoduleUsageExamplesById } from "~/data/tutorial";
 import type { LessonSubmodule } from "~/data/tutorial";
 
 const props = defineProps<{
@@ -14,6 +15,10 @@ const { getSubmoduleProgress } = useTutorialProgress();
 
 const submoduleProgress = computed(() => {
   return getSubmoduleProgress(props.moduleId, props.submodule);
+});
+
+const usageExamples = computed(() => {
+  return getSubmoduleUsageExamplesById(props.submodule.id);
 });
 </script>
 
@@ -98,6 +103,71 @@ const submoduleProgress = computed(() => {
           <strong>{{ reference.title }}</strong>
           <p>{{ reference.description }}</p>
         </a>
+      </div>
+    </article>
+
+    <article
+      v-if="usageExamples.length"
+      class="lesson-card usage-card"
+      :data-testid="`submodule-usage-${submodule.id}`"
+    >
+      <div class="docs-card-head">
+        <div>
+          <p class="eyebrow">Contoh penggunaan</p>
+          <h3>Kasus pakai yang lebih dekat ke situasi nyata</h3>
+        </div>
+        <span>{{ usageExamples.length }} contoh</span>
+      </div>
+
+      <div class="usage-grid">
+        <article
+          v-for="(usage, usageIndex) in usageExamples"
+          :key="`${submodule.id}-${usage.title}`"
+          class="lesson-card usage-example-card"
+          :class="{ 'usage-example-card-full': usage.comparison }"
+        >
+          <div class="usage-copy">
+            <h4>{{ usage.title }}</h4>
+            <p>{{ usage.summary }}</p>
+          </div>
+
+          <div
+            v-if="usage.comparison"
+            class="comparison-grid"
+            :data-testid="`submodule-usage-comparison-${submodule.id}-${usageIndex}`"
+          >
+            <article class="code-panel usage-code-panel">
+              <div class="code-header">
+                <span>{{ usage.comparison.withoutLabel }}</span>
+                <span>Sebelum solusi</span>
+              </div>
+              <pre><code>{{ usage.comparison.withoutCode }}</code></pre>
+            </article>
+
+            <article class="code-panel usage-code-panel">
+              <div class="code-header">
+                <span>{{ usage.comparison.withLabel }}</span>
+                <span>Setelah solusi</span>
+              </div>
+              <pre><code>{{ usage.comparison.withCode }}</code></pre>
+            </article>
+          </div>
+
+          <article v-else class="code-panel usage-code-panel">
+            <div class="code-header">
+              <span>{{ usage.title }}</span>
+              <span>Contoh pakai</span>
+            </div>
+            <pre><code>{{ usage.code }}</code></pre>
+          </article>
+
+          <p class="usage-takeaway">
+            {{ usage.takeaway }}
+          </p>
+          <p v-if="usage.comparison" class="usage-difference">
+            {{ usage.comparison.difference }}
+          </p>
+        </article>
       </div>
     </article>
 

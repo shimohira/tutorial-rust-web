@@ -16,6 +16,22 @@ export interface LessonReference {
   description: string;
 }
 
+export interface LessonUsageComparison {
+  withoutLabel: string;
+  withoutCode: string;
+  withLabel: string;
+  withCode: string;
+  difference: string;
+}
+
+export interface LessonUsageExample {
+  title: string;
+  summary: string;
+  takeaway: string;
+  code?: string;
+  comparison?: LessonUsageComparison;
+}
+
 export interface LessonSubmodule {
   id: string;
   title: string;
@@ -213,6 +229,1030 @@ const rustDocs: Record<string, LessonReference> = {
     description:
       "Pengantar resmi macro_rules!, macro derive, dan kapan macro layak dipakai sebagai alat terakhir.",
   },
+};
+
+const submoduleUsageExamples: Record<string, LessonUsageExample[]> = {
+  "setup-environment": [
+    {
+      title: "Verifikasi toolchain sebelum mulai project baru",
+      summary:
+        "Sebelum coding, biasakan memastikan toolchain aktif lalu buat project kecil untuk membuktikan environment memang siap dipakai.",
+      code: `rustup show active-toolchain
+rustc --version
+cargo new hello-rust
+cd hello-rust
+cargo run`,
+      takeaway:
+        "Urutan ini membuat Anda tahu problem ada di instalasi atau di kode. Jika toolchain valid, masalah berikutnya biasanya murni ada di source file.",
+    },
+  ],
+  "setup-cargo-cycle": [
+    {
+      title: "Pilih command Cargo sesuai tujuan kerja",
+      summary:
+        "Saat menambah helper function kecil, Anda tidak selalu perlu menjalankan binary. Gunakan command yang paling tepat untuk feedback tercepat.",
+      code: `cargo check
+cargo test
+cargo run
+cargo build --release`,
+      takeaway:
+        "Gunakan `cargo check` untuk validasi compile, `cargo test` untuk perilaku, `cargo run` saat butuh output runtime, dan `cargo build --release` untuk binary final.",
+    },
+  ],
+  "setup-project-map": [
+    {
+      title: "Pisahkan helper kecil dari alur main",
+      summary:
+        "Project minimal tetap lebih mudah dibaca jika `main` hanya memegang alur besar, sedangkan detail kecil disimpan di helper function.",
+      code: `fn banner() -> &'static str {
+    "layout siap"
+}
+
+fn main() {
+    println!("{}", banner());
+}`,
+      takeaway:
+        "Kebiasaan ini membuat file awal project tidak cepat padat dan membantu Anda melihat batas antara entry point dan logika pendukung.",
+    },
+  ],
+  "syntax-mutability": [
+    {
+      title: "Counter sederhana untuk jumlah item keranjang",
+      summary:
+        "Mutability paling terasa saat nilai memang berubah seiring alur program, misalnya saat menghitung item yang sudah dimasukkan user.",
+      code: `fn main() {
+    let mut cart_items = 0;
+    cart_items += 1;
+    cart_items += 2;
+
+    println!("items = {cart_items}");
+}`,
+      takeaway:
+        "Tambahkan `mut` hanya saat variable benar-benar berubah. Itu membuat niat kode lebih jelas bagi pembaca dan compiler.",
+    },
+  ],
+  "syntax-types": [
+    {
+      title: "Tuple untuk koordinat, array untuk daftar label",
+      summary:
+        "Satu nilai bisa heterogen lewat tuple, sedangkan daftar bernama sederhana dengan panjang tetap cocok memakai array.",
+      code: `const LIMIT: usize = 3;
+
+fn main() {
+    let center = (12, 24);
+    let labels = ["draft", "review", "done"];
+
+    println!("{} {} {}", LIMIT, center.0, labels[2]);
+}`,
+      takeaway:
+        "Pilih tipe compound berdasarkan intent data: tuple untuk pasangan nilai yang bergerak bersama, array untuk urutan tetap dengan tipe homogen.",
+    },
+  ],
+  "syntax-comments-numbers": [
+    {
+      title: "Hitung total invoice kecil",
+      summary:
+        "Komentar sering berguna untuk menandai niat perhitungan ketika formula mulai lebih panjang dari sekadar penjumlahan biasa.",
+      code: `fn main() {
+    // subtotal setelah diskon lalu dikali dua item
+    let unit_price = 18;
+    let discount = 3;
+    let total = (unit_price - discount) * 2;
+
+    println!("{total}");
+}`,
+      takeaway:
+        "Komentar singkat membantu pembaca memahami alasan rumus dipakai, sementara operator angka tetap menjadi fondasi utama perhitungan.",
+    },
+  ],
+  "syntax-boolean-logic": [
+    {
+      title: "Gabungkan syarat login sederhana",
+      summary:
+        "Boolean dan comparison operator paling mudah dipahami saat dipakai untuk keputusan nyata seperti akses login atau status validasi.",
+      code: `fn main() {
+    let has_email = true;
+    let has_password = true;
+    let can_login = has_email && has_password;
+
+    println!("{can_login}");
+}`,
+      takeaway:
+        "Bentuk keputusan kompleks menjadi beberapa boolean kecil lebih dulu, lalu gabungkan dengan operator logika agar jalur keputusan tetap mudah dipindai.",
+    },
+  ],
+  "ownership-borrowing": [
+    {
+      title: "Preview judul tanpa mengambil ownership",
+      summary:
+        "Halaman preview sering hanya perlu membaca sebagian teks, jadi function cukup menerima `&str` agar caller tetap memegang owner utama.",
+      code: `fn preview(title: &str) {
+    println!("preview: {title}");
+}
+
+fn main() {
+    let title = String::from("Rust dashboard");
+    preview(&title);
+    println!("owner masih ada: {title}");
+}`,
+      takeaway:
+        "Borrow cocok untuk pembaca data. Function mendapat akses yang cukup, sementara caller tetap bebas memakai nilai aslinya setelah function selesai.",
+    },
+    {
+      title: "Move ownership vs borrow reference",
+      summary:
+        "Perbandingan ini memperlihatkan alasan utama borrow ada: tanpa borrow, caller kehilangan hak pakai nilai aslinya setelah value dikirim ke function.",
+      takeaway:
+        "Pilih borrow saat function hanya perlu membaca data. Move baru masuk akal jika function memang perlu menjadi owner penuh atas value tersebut.",
+      comparison: {
+        withoutLabel: "Tanpa borrow",
+        withoutCode: `fn print_title(title: String) {
+    println!("{title}");
+}
+
+fn main() {
+    let title = String::from("Rust dashboard");
+    print_title(title);
+    // println!("{title}");
+}`,
+        withLabel: "Dengan borrow",
+        withCode: `fn print_title(title: &str) {
+    println!("{title}");
+}
+
+fn main() {
+    let title = String::from("Rust dashboard");
+    print_title(&title);
+    println!("{title}");
+}`,
+        difference:
+          "Pada versi tanpa borrow, ownership `String` pindah ke function sehingga caller tidak bisa memakainya lagi. Pada versi dengan borrow, function cukup membaca `&str` dan owner utama tetap berada di caller.",
+      },
+    },
+  ],
+  "ownership-mutable-borrow": [
+    {
+      title: "Normalisasi label dengan mutable borrow",
+      summary:
+        "Ketika sebuah helper hanya bertugas memperbarui string yang sudah dimiliki caller, `&mut String` memberi jalur mutasi yang jelas.",
+      code: `fn append_release_tag(name: &mut String) {
+    name.push_str(" v1");
+}
+
+fn main() {
+    let mut label = String::from("build");
+    append_release_tag(&mut label);
+    println!("{label}");
+}`,
+      takeaway:
+        "Mutable borrow membuat mutasi terasa eksplisit: data tetap dimiliki caller, tetapi satu helper boleh mengubah isinya untuk sementara.",
+    },
+  ],
+  "ownership-memory-moves": [
+    {
+      title: "Serahkan String ke formatter lalu ambil kembali",
+      summary:
+        "Kadang sebuah function memang perlu menjadi owner sementara, misalnya untuk memproses atau mengembalikan data heap yang sudah dimodifikasi.",
+      code: `fn wrap(title: String) -> String {
+    format!("[{title}]")
+}
+
+fn main() {
+    let title = String::from("release");
+    let title = wrap(title);
+    println!("{title}");
+}`,
+      takeaway:
+        "Move bukan berarti data hilang. Ownership bisa pindah ke function lalu kembali lagi lewat return value yang jelas.",
+    },
+  ],
+  "ownership-slices": [
+    {
+      title: "Ambil command pertama dari input user",
+      summary:
+        "Slice cocok saat Anda hanya perlu melihat sebagian teks tanpa membuat String baru yang terpisah.",
+      code: `fn first_token(text: &str) -> &str {
+    &text[..4]
+}
+
+fn main() {
+    let command = String::from("push origin");
+    println!("{}", first_token(&command));
+}`,
+      takeaway:
+        "String slice memberi view ke data asal. Anda hemat alokasi baru dan tetap menunjukkan bahwa hasilnya bergantung pada sumber aslinya.",
+    },
+  ],
+  "control-flow-if-expression": [
+    {
+      title: "Status kelulusan langsung dari if expression",
+      summary:
+        "Karena `if` adalah expression, Anda bisa langsung mengisi variable hasil tanpa menulis assignment berulang di tiap cabang.",
+      code: `fn main() {
+    let score = 82;
+    let status = if score >= 75 { "lulus" } else { "ulang" };
+
+    println!("{status}");
+}`,
+      takeaway:
+        "Gunakan `if expression` saat setiap cabang menghasilkan nilai yang sama-sama valid untuk satu variable hasil.",
+    },
+    {
+      title: "if sebagai statement vs if sebagai expression",
+      summary:
+        "Kedua bentuk bisa sama-sama bekerja, tetapi `if expression` biasanya lebih ringkas ketika tujuannya hanya menentukan satu nilai akhir.",
+      takeaway:
+        "Jika setiap cabang hanya mengisi satu hasil, `if expression` mengurangi mutable temporary yang sebenarnya tidak diperlukan.",
+      comparison: {
+        withoutLabel: "Sebagai statement",
+        withoutCode: `fn main() {
+    let score = 82;
+    let mut status = "ulang";
+
+    if score >= 75 {
+        status = "lulus";
+    }
+
+    println!("{status}");
+}`,
+        withLabel: "Sebagai expression",
+        withCode: `fn main() {
+    let score = 82;
+    let status = if score >= 75 { "lulus" } else { "ulang" };
+
+    println!("{status}");
+}`,
+        difference:
+          "Bentuk statement membutuhkan variable mutable yang diubah kemudian. Bentuk expression langsung menghasilkan nilai akhir, sehingga alur keputusan terasa lebih pendek dan lebih deklaratif.",
+      },
+    },
+  ],
+  "control-flow-loops": [
+    {
+      title: "Polling sederhana dengan while",
+      summary:
+        "Loop dengan kondisi eksplisit terasa natural untuk kasus retry atau polling yang berhenti setelah syarat tertentu terpenuhi.",
+      code: `fn main() {
+    let mut attempt = 0;
+
+    while attempt < 3 {
+        attempt += 1;
+    }
+
+    println!("{attempt}");
+}`,
+      takeaway:
+        "Pakai `while` saat syarat berhenti memang berupa kondisi boolean yang berubah dari iterasi ke iterasi.",
+    },
+  ],
+  "control-flow-functions": [
+    {
+      title: "Recursion kecil untuk factorial",
+      summary:
+        "Recursion paling mudah dipahami saat domainnya jelas dan punya kasus basis yang pendek, seperti factorial atau countdown.",
+      code: `fn factorial(n: u32) -> u32 {
+    if n == 0 { 1 } else { n * factorial(n - 1) }
+}
+
+fn main() {
+    println!("{}", factorial(5));
+}`,
+      takeaway:
+        "Jika recursion dipakai, pastikan kasus basis dan langkah pengurangannya terbaca sangat cepat. Itu lebih penting daripada membuatnya terlihat pintar.",
+    },
+  ],
+  "modeling-struct-method": [
+    {
+      title: "User card dengan method label",
+      summary:
+        "Struct dan method terasa natural ketika satu data memang selalu punya perilaku pendamping, seperti label ringkas untuk UI.",
+      code: `struct User {
+    name: String,
+    age: u8,
+}
+
+impl User {
+    fn label(&self) -> String {
+        format!("{} ({})", self.name, self.age)
+    }
+}`,
+      takeaway:
+        "Method membuat perilaku menempel pada tipe yang tepat. Itu lebih rapi daripada menyebar helper function bebas untuk setiap format kecil.",
+    },
+  ],
+  "modeling-enum-match": [
+    {
+      title: "State dokumen yang eksplisit",
+      summary:
+        "Enum sangat pas untuk state yang saling eksklusif, misalnya dokumen hanya bisa draft atau published pada satu waktu.",
+      code: `enum Status {
+    Draft,
+    Published,
+}
+
+fn label(status: Status) -> &'static str {
+    match status {
+        Status::Draft => "draft",
+        Status::Published => "published",
+    }
+}`,
+      takeaway:
+        "Gunakan enum saat beberapa boolean mulai terasa rapuh. `match` lalu memaksa Anda menangani semua state secara eksplisit.",
+    },
+    {
+      title: "Banyak boolean vs enum untuk state",
+      summary:
+        "Saat satu domain hanya boleh punya satu status aktif, enum biasanya jauh lebih aman daripada menyebar beberapa boolean yang bisa saling bertentangan.",
+      takeaway:
+        "Enum mencegah kombinasi state yang tidak valid sejak level model data. Itu membuat logika berikutnya lebih sederhana dan lebih aman.",
+      comparison: {
+        withoutLabel: "Dengan banyak boolean",
+        withoutCode: `struct DocState {
+    is_draft: bool,
+    is_published: bool,
+}`,
+        withLabel: "Dengan enum",
+        withCode: `enum DocState {
+    Draft,
+    Published,
+}`,
+        difference:
+          "Versi boolean membolehkan kombinasi yang tidak masuk akal seperti `is_draft = true` dan `is_published = true` sekaligus. Enum memaksa hanya satu state aktif pada satu waktu.",
+      },
+    },
+  ],
+  "modeling-type-alias": [
+    {
+      title: "Alias untuk ID domain",
+      summary:
+        "Type alias membantu signature function terasa lebih dekat ke bahasa domain tanpa biaya runtime tambahan.",
+      code: `type OrderId = u64;
+
+fn detail_path(id: OrderId) -> String {
+    format!("/orders/{id}")
+}
+
+fn main() {
+    println!("{}", detail_path(14));
+}`,
+      takeaway:
+        "Alias kecil seperti `OrderId` atau `UserId` membuat pembaca langsung tahu intent angka tersebut tanpa harus menebak dari konteks.",
+    },
+  ],
+  "abstraction-traits": [
+    {
+      title: "Satu trait, dua sumber ringkasan",
+      summary:
+        "Trait berguna saat dua tipe berbeda perlu menawarkan perilaku yang sama dari sudut pandang caller.",
+      code: `trait Summary {
+    fn summary(&self) -> String;
+}
+
+struct Note {
+    title: String,
+}
+
+impl Summary for Note {
+    fn summary(&self) -> String {
+        format!("Catatan: {}", self.title)
+    }
+}`,
+      takeaway:
+        "Trait memindahkan fokus dari 'tipe apa ini?' ke 'perilaku apa yang dijanjikan tipe ini?'",
+    },
+    {
+      title: "Function terpisah vs trait pada dua struct",
+      summary:
+        "Saat dua struct berbeda butuh perilaku yang mirip, trait biasanya lebih rapi daripada menulis helper function terpisah yang sulit diskalakan.",
+      takeaway:
+        "Trait merangkum kontrak perilaku untuk beberapa tipe. Itu menjaga caller tetap fokus pada operasi yang tersedia, bukan pada daftar helper function yang terus bertambah.",
+      comparison: {
+        withoutLabel: "Tanpa trait",
+        withoutCode: `struct Article {
+    title: String,
+}
+
+struct Video {
+    title: String,
+}
+
+fn article_summary(item: &Article) -> String {
+    format!("Artikel: {}", item.title)
+}
+
+fn video_summary(item: &Video) -> String {
+    format!("Video: {}", item.title)
+}`,
+        withLabel: "Dengan trait",
+        withCode: `trait Summary {
+    fn summary(&self) -> String;
+}
+
+struct Article {
+    title: String,
+}
+
+struct Video {
+    title: String,
+}
+
+impl Summary for Article {
+    fn summary(&self) -> String {
+        format!("Artikel: {}", self.title)
+    }
+}
+
+impl Summary for Video {
+    fn summary(&self) -> String {
+        format!("Video: {}", self.title)
+    }
+}`,
+        difference:
+          "Tanpa trait, setiap tipe butuh helper function sendiri. Dengan trait, kontrak perilakunya disatukan dan caller dapat berbicara ke kedua tipe lewat method yang sama.",
+      },
+    },
+  ],
+  "abstraction-generics": [
+    {
+      title: "Ambil item pertama dari data apa pun",
+      summary:
+        "Generic paling terasa manfaatnya ketika logika benar-benar sama untuk banyak tipe, misalnya mengambil elemen pertama dari slice.",
+      code: `fn first_item<T>(items: &[T]) -> &T {
+    &items[0]
+}
+
+fn main() {
+    let ids = [10, 11, 12];
+    println!("{}", first_item(&ids));
+}`,
+      takeaway:
+        "Gunakan generic saat perilakunya identik, bukan hanya karena Anda ingin kodenya terlihat lebih abstrak.",
+    },
+    {
+      title: "Function duplikat vs generic function",
+      summary:
+        "Jika dua function berbeda hanya dibedakan oleh tipe input, generic biasanya menjadi bentuk yang lebih jujur terhadap intent kodenya.",
+      takeaway:
+        "Generic mengurangi duplikasi saat logika memang sama. Jangan pakai kalau perilakunya sebenarnya berbeda dan hanya kebetulan mirip sekilas.",
+      comparison: {
+        withoutLabel: "Dengan function duplikat",
+        withoutCode: `fn first_i32(items: &[i32]) -> &i32 {
+    &items[0]
+}
+
+fn first_str(items: &[&str]) -> &&str {
+    &items[0]
+}`,
+        withLabel: "Dengan generic function",
+        withCode: `fn first_item<T>(items: &[T]) -> &T {
+    &items[0]
+}`,
+        difference:
+          "Versi duplikat menyalin logika yang sama untuk tiap tipe. Versi generic menuliskan sekali perilaku yang identik dan membiarkan compiler menghasilkan versi konkretnya saat dipakai.",
+      },
+    },
+  ],
+  "abstraction-modules": [
+    {
+      title: "Pisahkan fungsi greeting ke module kecil",
+      summary:
+        "Module membantu Anda membatasi area tanggung jawab dan membuat path pemanggilan function terasa lebih terstruktur.",
+      code: `mod greeting {
+    pub fn text() -> &'static str {
+        "halo"
+    }
+}
+
+fn main() {
+    println!("{}", greeting::text());
+}`,
+      takeaway:
+        "Dengan module kecil dan `pub` yang selektif, batas API project mulai terlihat jelas bahkan sejak contoh yang sangat sederhana.",
+    },
+    {
+      title: "Semua helper di root vs dipisah ke module",
+      summary:
+        "Ketika project mulai bertambah, perbedaan utamanya bukan sekadar syntax `mod`, tetapi kemampuan menjaga area tanggung jawab tetap terkelompok.",
+      takeaway:
+        "Memecah helper ke module membuat pembaca tahu fungsi mana yang milik satu area masalah, sekaligus membuka ruang untuk visibility yang lebih rapi.",
+      comparison: {
+        withoutLabel: "Tanpa module",
+        withoutCode: `fn greeting_text() -> &'static str {
+    "halo"
+}
+
+fn greeting_color() -> &'static str {
+    "hijau"
+}`,
+        withLabel: "Dengan module",
+        withCode: `mod greeting {
+    pub fn text() -> &'static str {
+        "halo"
+    }
+
+    pub fn color() -> &'static str {
+        "hijau"
+    }
+}`,
+        difference:
+          "Tanpa module, helper cepat bercampur dengan item lain di root file. Dengan module, function terkait dikelompokkan bersama dan batas aksesnya bisa diatur lebih jelas.",
+      },
+    },
+  ],
+  "stdlib-option": [
+    {
+      title: "Fallback nickname dengan Option",
+      summary:
+        "Option sangat pas untuk data yang boleh ada atau tidak ada, misalnya nickname opsional saat profil user belum lengkap.",
+      code: `fn display_name(value: Option<&str>) -> &str {
+    match value {
+        Some(name) => name,
+        None => "anonymous",
+    }
+}
+
+fn main() {
+    println!("{}", display_name(None));
+}`,
+      takeaway:
+        "Option memaksa jalur kosong ditulis eksplisit. Itu jauh lebih aman daripada berharap nilai kosong tidak muncul diam-diam.",
+    },
+    {
+      title: "Nilai sentinel vs Option yang eksplisit",
+      summary:
+        "Kebutuhan data opsional sering awalnya dimodelkan dengan sentinel seperti string kosong. `Option` lebih jujur karena kondisi kosong menjadi bagian dari tipe.",
+      takeaway:
+        "Gunakan `Option` saat tidak adanya nilai memang bermakna. Hindari sentinel tersembunyi yang membuat caller harus menebak apakah string kosong itu valid atau tidak.",
+      comparison: {
+        withoutLabel: "Dengan sentinel kosong",
+        withoutCode: `fn nickname(has_value: bool, name: &str) -> &str {
+    if has_value { name } else { "" }
+}`,
+        withLabel: "Dengan Option",
+        withCode: `fn nickname(name: Option<&str>) -> &str {
+    match name {
+        Some(value) => value,
+        None => "anonymous",
+    }
+}`,
+        difference:
+          "Pendekatan sentinel menyembunyikan arti 'tidak ada nilai' di string kosong. `Option` membuat kondisi itu eksplisit di signature function sehingga caller dan compiler sama-sama melihat kontraknya.",
+      },
+    },
+  ],
+  "stdlib-iterators": [
+    {
+      title: "Transformasi data tanpa loop manual panjang",
+      summary:
+        "Iterator chain terasa kuat ketika Anda membaca urutannya sebagai pipa transformasi: sumber, ubah, lalu kumpulkan.",
+      code: `fn main() {
+    let scores = [10, 20, 30];
+    let boosted: Vec<i32> = scores
+        .into_iter()
+        .map(|value| value + 5)
+        .collect();
+
+    println!("{:?}", boosted);
+}`,
+      takeaway:
+        "Iterator cocok untuk transformasi data yang berulang. Selama setiap langkahnya pendek, chain tetap mudah dibaca.",
+    },
+    {
+      title: "Loop manual vs iterator chain",
+      summary:
+        "Kedua pendekatan bisa valid, tetapi iterator biasanya lebih enak dibaca untuk alur transformasi data yang lurus dari sumber ke hasil akhir.",
+      takeaway:
+        "Saat pola kerjanya 'ambil semua item, ubah, lalu kumpulkan', iterator sering memberi bentuk yang lebih deklaratif daripada loop manual dengan `push` berulang.",
+      comparison: {
+        withoutLabel: "Loop manual",
+        withoutCode: `fn main() {
+    let scores = [10, 20, 30];
+    let mut boosted = Vec::new();
+
+    for value in scores {
+        boosted.push(value + 5);
+    }
+}`,
+        withLabel: "Iterator chain",
+        withCode: `fn main() {
+    let scores = [10, 20, 30];
+    let boosted: Vec<i32> = scores
+        .into_iter()
+        .map(|value| value + 5)
+        .collect();
+}`,
+        difference:
+          "Loop manual memberi kontrol langkah demi langkah, tetapi juga menambah mutable state dan `push`. Iterator chain menulis transformasi sebagai alur data: sumber, ubah, lalu kumpulkan.",
+      },
+    },
+  ],
+  "stdlib-string-formatting": [
+    {
+      title: "Bangun subject email dari data kecil",
+      summary:
+        "Formatting dan manipulasi string sering dipakai bersamaan saat Anda menormalisasi input lalu membangun output yang rapi.",
+      code: `fn main() {
+    let topic = " rust ".trim().to_uppercase();
+    let subject = format!("Update: {topic}");
+
+    println!("{subject}");
+}`,
+      takeaway:
+        "Pisahkan transformasi teks dari `format!` terakhir agar alur pembentukan string tetap mudah dibaca.",
+    },
+  ],
+  "collections-sequence": [
+    {
+      title: "Urutan roadmap belajar dengan Vec",
+      summary:
+        "Sequence cocok saat posisi item penting, misalnya urutan modul yang harus dipelajari dari awal sampai akhir.",
+      code: `fn main() {
+    let mut roadmap = vec!["setup", "syntax"];
+    roadmap.push("ownership");
+
+    println!("{} {}", roadmap.len(), roadmap[1]);
+}`,
+      takeaway:
+        "Pilih sequence ketika urutan perlu dipertahankan dan Anda sering menambah item baru di akhir daftar.",
+    },
+  ],
+  "collections-maps": [
+    {
+      title: "Lookup skor berdasarkan nama topik",
+      summary:
+        "HashMap cocok saat akses utama ke data adalah key seperti nama topik, ID, atau slug, bukan posisi index.",
+      code: `use std::collections::HashMap;
+
+fn main() {
+    let mut scores = HashMap::new();
+    scores.insert("ownership", 95);
+    scores.insert("trait", 88);
+
+    println!("{}", scores["ownership"]);
+}`,
+      takeaway:
+        "Gunakan map ketika pertanyaan utamanya adalah 'berapa nilai untuk key ini?', bukan 'elemen ke berapa yang saya butuhkan?'.",
+    },
+    {
+      title: "HashMap yang menyimpan struct sebagai value",
+      summary:
+        "Map tidak harus hanya menyimpan angka atau string. Ia sangat berguna ketika setiap key mengarah ke data domain yang lebih kaya.",
+      code: `use std::collections::HashMap;
+
+#[derive(Debug)]
+struct ScoreCard {
+    passed: bool,
+    value: u8,
+}
+
+fn main() {
+    let mut reports = HashMap::new();
+    reports.insert(
+        "ownership",
+        ScoreCard {
+            passed: true,
+            value: 95,
+        },
+    );
+
+    println!("{}", reports["ownership"].value);
+}`,
+      takeaway:
+        "Begitu value map berupa struct, Anda bisa mengelompokkan beberapa field domain dalam satu lookup yang tetap rapi dan mudah dibaca.",
+    },
+    {
+      title: "Vec pasangan data vs HashMap",
+      summary:
+        "Kadang data key-value awalnya ditaruh di sequence biasa. Begitu operasi utamanya berubah menjadi lookup berbasis nama, HashMap biasanya lebih tepat.",
+      takeaway:
+        "Pilih struktur data berdasarkan cara akses utama. Jika akses dominannya by key, map jauh lebih jujur daripada memaksa semuanya ke sequence.",
+      comparison: {
+        withoutLabel: "Dengan Vec tuple",
+        withoutCode: `let scores = vec![
+    ("ownership", 95),
+    ("trait", 88),
+];
+
+for (topic, score) in scores {
+    if topic == "ownership" {
+        println!("{score}");
+    }
+}`,
+        withLabel: "Dengan HashMap",
+        withCode: `use std::collections::HashMap;
+
+let mut scores = HashMap::new();
+scores.insert("ownership", 95);
+scores.insert("trait", 88);
+
+println!("{}", scores["ownership"]);`,
+        difference:
+          "Vec tuple masih bisa dipakai, tetapi lookup perlu iterasi manual. HashMap langsung memodelkan relasi key-value dan membuat niat akses by key terlihat dari strukturnya.",
+      },
+    },
+  ],
+  "collections-sets": [
+    {
+      title: "Simpan tag unik materi",
+      summary:
+        "HashSet tepat saat Anda hanya peduli apakah suatu nilai sudah ada atau belum, misalnya tag unik untuk artikel atau materi.",
+      code: `use std::collections::HashSet;
+
+fn main() {
+    let mut tags = HashSet::new();
+    tags.insert("rust");
+    tags.insert("rust");
+
+    println!("{}", tags.contains("rust"));
+}`,
+      takeaway:
+        "Set menyederhanakan kasus deduplication. Anda tidak perlu manual mengecek duplikasi sebelum insert nilai yang sama.",
+    },
+    {
+      title: "Vec dedup manual vs HashSet",
+      summary:
+        "Jika tujuan utamanya adalah menjaga nilai tetap unik, memakai `Vec` sering berujung ke pengecekan `contains` berulang yang sebenarnya bukan intent utamanya.",
+      takeaway:
+        "Saat keunikan adalah kebutuhan utama, `HashSet` lebih tepat karena struktur datanya langsung menyatakan aturan itu.",
+      comparison: {
+        withoutLabel: "Dengan Vec",
+        withoutCode: `let mut tags = vec!["rust"];
+
+if !tags.contains(&"rust") {
+    tags.push("rust");
+}`,
+        withLabel: "Dengan HashSet",
+        withCode: `use std::collections::HashSet;
+
+let mut tags = HashSet::new();
+tags.insert("rust");
+tags.insert("rust");`,
+        difference:
+          "Dengan Vec, Anda harus manual mengecek duplikasi sebelum `push`. Dengan HashSet, aturan unik sudah menjadi sifat bawaan strukturnya.",
+      },
+    },
+  ],
+  "advanced-result": [
+    {
+      title: "API pembagian yang bisa gagal",
+      summary:
+        "Result cocok untuk operasi yang memang bisa gagal secara normal, seperti pembagian dengan kemungkinan pembagi nol.",
+      code: `fn divide(a: i32, b: i32) -> Result<i32, String> {
+    if b == 0 {
+        return Err(String::from("pembagi tidak boleh nol"));
+    }
+
+    Ok(a / b)
+}`,
+      takeaway:
+        "Jadikan jalur sukses dan gagal bagian dari signature function. Itu membuat caller tahu kontrak fungsi sejak awal.",
+    },
+    {
+      title: "unwrap panic vs Result yang eksplisit",
+      summary:
+        "Ada perbedaan besar antara program yang crash saat gagal dan program yang mengembalikan informasi error sebagai bagian dari kontraknya.",
+      takeaway:
+        "Gunakan `Result` ketika kegagalan adalah kemungkinan normal yang masih bisa ditangani caller. Simpan `unwrap` atau `panic!` untuk kasus yang benar-benar tidak layak dilanjutkan.",
+      comparison: {
+        withoutLabel: "Dengan unwrap / panic",
+        withoutCode: `fn main() {
+    let value = "abc".parse::<i32>().unwrap();
+    println!("{value}");
+}`,
+        withLabel: "Dengan Result",
+        withCode: `fn parse_number(text: &str) -> Result<i32, std::num::ParseIntError> {
+    text.parse::<i32>()
+}`,
+        difference:
+          "Versi `unwrap` menghentikan program saat parse gagal. Versi `Result` mengembalikan keputusan itu ke caller, sehingga jalur error bisa ditangani secara sadar dan eksplisit.",
+      },
+    },
+  ],
+  "advanced-question-mark": [
+    {
+      title: "Rangkai parse dengan operator tanya",
+      summary:
+        "Saat beberapa function Result saling memanggil, operator `?` menjaga alurnya tetap pendek dan fokus pada jalur sukses utama.",
+      code: `fn parse_number(text: &str) -> Result<i32, std::num::ParseIntError> {
+    let value = text.parse::<i32>()?;
+    Ok(value)
+}
+
+fn main() -> Result<(), std::num::ParseIntError> {
+    let value = parse_number("42")?;
+    println!("{value}");
+    Ok(())
+}`,
+      takeaway:
+        "Operator `?` membuat error propagation terasa alami, selama function caller juga mengembalikan tipe yang kompatibel.",
+    },
+  ],
+  "advanced-lifetimes": [
+    {
+      title: "Pilih label terpanjang tanpa membuat String baru",
+      summary:
+        "Lifetime paling sering muncul saat function mengembalikan salah satu dari beberapa reference input yang diterimanya.",
+      code: `fn longest<'a>(left: &'a str, right: &'a str) -> &'a str {
+    if left.len() > right.len() {
+        left
+    } else {
+        right
+    }
+}`,
+      takeaway:
+        "Lifetime tidak menambah umur data. Ia hanya menjelaskan ke compiler bagaimana relasi hidup antar-reference itu bekerja.",
+    },
+  ],
+  "advanced-attributes-derive": [
+    {
+      title: "Debug untuk inspeksi data saat development",
+      summary:
+        "Saat model data baru dibuat, derive `Debug` adalah salah satu alat tercepat untuk memastikan isi struct memang sesuai dugaan.",
+      code: `#[derive(Debug)]
+struct Config {
+    retries: u8,
+    verbose: bool,
+}
+
+fn main() {
+    println!("{:?}", Config { retries: 3, verbose: true });
+}`,
+      takeaway:
+        "Derive menghemat banyak boilerplate. Untuk tahap belajar dan debugging, `Debug` hampir selalu menjadi derive pertama yang berguna.",
+    },
+  ],
+  "advanced-smart-pointers": [
+    {
+      title: "Tanpa Box vs dengan Box pada recursive type",
+      summary:
+        "Perbedaan paling terasa dari `Box` muncul saat Anda mencoba membuat tipe rekursif. Tanpa `Box`, compiler tidak tahu ukuran data akhirnya.",
+      takeaway:
+        "Gunakan `Box` saat tipe rekursif butuh ukuran tetap di compile time. Yang disimpan tiap node adalah pointer berukuran tetap, bukan seluruh struktur berikutnya.",
+      comparison: {
+        withoutLabel: "Tanpa Box",
+        withoutCode: `enum List {
+    Cons(i32, List),
+    Nil,
+}`,
+        withLabel: "Dengan Box",
+        withCode: `enum List {
+    Cons(i32, Box<List>),
+    Nil,
+}
+
+fn main() {
+    let _list = List::Cons(1, Box::new(List::Nil));
+}`,
+        difference:
+          "Tanpa `Box`, ukuran `List` menjadi tak terbatas karena setiap `Cons` mencoba memuat `List` lain secara penuh. Dengan `Box`, yang disimpan hanya pointer ke node berikutnya sehingga ukuran enum menjadi tetap dan valid.",
+      },
+    },
+    {
+      title: "Box membungkus struct konfigurasi besar",
+      summary:
+        "Selain untuk recursive type, `Box` juga berguna saat Anda ingin memindahkan struct besar lewat pointer kecil di stack sementara data utamanya hidup di heap.",
+      code: `#[derive(Debug)]
+struct AppConfig {
+    app_name: String,
+    retries: u8,
+    endpoints: Vec<&'static str>,
+}
+
+fn main() {
+    let config = Box::new(AppConfig {
+        app_name: String::from("Rust Lab"),
+        retries: 3,
+        endpoints: vec!["/run", "/preview"],
+    });
+
+    println!("{}", config.app_name);
+}`,
+      takeaway:
+        "Pada contoh ini `AppConfig` tetap terasa seperti struct biasa, tetapi ownership yang bergerak di stack hanyalah pointer `Box`. Itu berguna saat data utama lebih besar atau ingin jelas berada di heap.",
+    },
+    {
+      title: "Box untuk trait object runtime",
+      summary:
+        "Box juga sering dipakai untuk trait object ketika tipe konkret baru diketahui saat runtime, tetapi caller tetap ingin berbicara lewat satu kontrak perilaku.",
+      code: `trait Summary {
+    fn summary(&self) -> String;
+}
+
+struct Note {
+    title: String,
+}
+
+impl Summary for Note {
+    fn summary(&self) -> String {
+        format!("Catatan: {}", self.title)
+    }
+}
+
+fn main() {
+    let item: Box<dyn Summary> = Box::new(Note {
+        title: String::from("Trait object"),
+    });
+
+    println!("{}", item.summary());
+}`,
+      takeaway:
+        "`Box<dyn Trait>` berguna saat Anda ingin menyimpan atau mengirim beberapa tipe berbeda lewat satu interface perilaku yang sama.",
+    },
+    {
+      title: "Rc untuk shared ownership pada struct",
+      summary:
+        "Jika beberapa bagian UI atau service hanya perlu membaca data profile yang sama, `Rc` memberi shared ownership tanpa menyalin seluruh struct berkali-kali.",
+      code: `use std::rc::Rc;
+
+#[derive(Debug)]
+struct Profile {
+    name: String,
+    role: &'static str,
+}
+
+fn main() {
+    let profile = Rc::new(Profile {
+        name: String::from("Nina"),
+        role: "admin",
+    });
+
+    let sidebar = Rc::clone(&profile);
+    let content = Rc::clone(&profile);
+
+    println!("{} {}", sidebar.name, content.role);
+}`,
+      takeaway:
+        "`Rc` cocok untuk shared ownership non-thread-safe. Gunakan saat beberapa owner perlu membaca nilai yang sama tanpa saling merebut ownership.",
+    },
+    {
+      title: "Implementasi Deref pada struct pembungkus",
+      summary:
+        "Deref bukan hanya milik `Box`. Struct pembungkus Anda sendiri juga bisa mengimplementasikannya agar terasa natural saat dipakai bersama API yang menerima reference umum.",
+      code: `use std::ops::Deref;
+
+struct AppName(String);
+
+impl Deref for AppName {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+fn print_label(text: &str) {
+    println!("{text}");
+}
+
+fn main() {
+    let app_name = AppName(String::from("Rust Lab"));
+    print_label(&app_name);
+}`,
+      takeaway:
+        "Dengan `Deref`, wrapper struct tetap punya API yang rapi tanpa memaksa caller terus-menerus membuka field internalnya secara manual.",
+    },
+    {
+      title: "RefCell di dalam struct counter",
+      summary:
+        "Interior mutability paling terasa ketika `RefCell` menjadi bagian dari field struct yang tampak immutable dari luar, tetapi tetap punya state internal kecil yang berubah.",
+      code: `use std::cell::RefCell;
+
+struct Counter {
+    clicks: RefCell<u32>,
+}
+
+fn main() {
+    let counter = Counter {
+        clicks: RefCell::new(0),
+    };
+
+    *counter.clicks.borrow_mut() += 1;
+    println!("{}", counter.clicks.borrow());
+}`,
+      takeaway:
+        "Jangan lompat ke `RefCell` terlalu cepat. Pakai hanya saat desain data memang butuh interior mutability yang tidak bisa diekspresikan bersih lewat borrow biasa.",
+    },
+  ],
+  "advanced-static-macro": [
+    {
+      title: "Nama aplikasi global dari macro kecil",
+      summary:
+        "Contoh aman dari `static` dan macro adalah mengisi satu nilai global tetap dari macro sederhana yang hanya mengembalikan string literal.",
+      code: `macro_rules! label {
+    () => {
+        "Rust Lab"
+    };
+}
+
+static APP_NAME: &str = label!();
+
+fn main() {
+    println!("{APP_NAME}");
+}`,
+      takeaway:
+        "Gunakan `static` untuk nilai global yang benar-benar stabil. Macro lalu membantu Anda menjaga pola definisinya tetap ringkas dan konsisten.",
+    },
+  ],
 };
 
 export const overviewCards = [
@@ -2497,6 +3537,10 @@ export const moduleIds = lessonSections.map((section) => section.id);
 
 export function getLessonSectionById(id: string) {
   return lessonSections.find((section) => section.id === id);
+}
+
+export function getSubmoduleUsageExamplesById(id: string) {
+  return submoduleUsageExamples[id] ?? [];
 }
 
 export function getModuleExercisesById(id: string) {
