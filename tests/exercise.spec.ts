@@ -119,3 +119,22 @@ test("related modules expose official Rust docs links", async ({ page }) => {
   await expect(loopDocs).toBeVisible();
   await expect(loopDocs.locator(`a[href="${rangeDocsUrl}"]`)).toBeVisible();
 });
+
+test("collections are split into sequence maps and sets submodules", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("link", {
+    name: /Sequence, Maps, Sets, dan collection standar/i,
+  }).click();
+
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: /Sequence, Maps, Sets, dan collection standar/i,
+    }),
+  ).toBeVisible();
+
+  await expect(page.getByTestId("submodule-collections-sequence")).toBeVisible();
+  await expect(page.getByTestId("submodule-collections-maps")).toBeVisible();
+  await expect(page.getByTestId("submodule-collections-sets")).toBeVisible();
+});

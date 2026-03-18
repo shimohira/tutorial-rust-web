@@ -1691,20 +1691,20 @@ fn main() {
   {
     id: "stdlib",
     badge: "Modul 7",
-    title: "String API, Option, closure, collections, iterator, formatting",
+    title: "String API, Option, closure, iterator, formatting",
     summary:
-      "Modul ini sangat praktis karena langsung menyentuh pekerjaan sehari-hari. Anda akan mulai memakai tipe data dan pola yang sering muncul di aplikasi nyata.",
+      "Modul ini sangat praktis karena langsung menyentuh pekerjaan sehari-hari. Fokusnya ada pada teks, nilai opsional, closure kecil, iterator, dan formatting yang sering muncul di aplikasi nyata.",
     foundations: [
       "Option menggantikan null atau undefined. Nilai kosong harus ditangani secara eksplisit, biasanya lewat match atau helper method.",
       "String dan &str menyediakan banyak method. Kuncinya bukan menghafal semuanya, tetapi tahu cara menelusuri dokumentasi dan memilih method yang tepat.",
       "Closure adalah function tanpa nama yang bisa disimpan di variable atau dikirim sebagai parameter.",
-      "Collection utama yang perlu dikuasai lebih dulu adalah Vec, HashMap, dan HashSet.",
+      "Iterator dan method helper seperti map atau unwrap_or_else sering dipadukan dengan closure kecil yang fokus pada satu transformasi.",
     ],
     deepDive: [
       "Display dan Debug melayani kebutuhan berbeda. Display untuk output yang lebih rapi, Debug untuk melihat representasi teknis.",
       "Iterator membuat transformasi data lebih deklaratif. map, filter, collect, dan fold adalah method yang sangat sering dipakai.",
-      "Vec cocok sebagai default collection. Ganti ke struktur lain hanya jika ada alasan nyata seperti butuh key-value atau data unik.",
       "Closure bisa menangkap nilai dari scope luar, dan ini sangat berguna tetapi juga perlu dikontrol agar kode tetap jelas.",
+      "String API dan formatting hampir selalu dipakai bersama karena hasil transformasi teks biasanya perlu langsung dirangkai ke output akhir.",
     ],
     pitfalls: [
       "Memakai loop manual panjang padahal iterator chain jauh lebih bersih untuk transformasi data.",
@@ -1712,7 +1712,7 @@ fn main() {
     ],
     checkpoints: [
       "Anda bisa memakai Option tanpa mengandalkan nilai kosong ala bahasa lain.",
-      "Anda nyaman membangun Vec dan HashMap untuk data sederhana.",
+      "Anda paham bagaimana closure kecil ikut hidup di dalam iterator chain atau helper Option.",
       "Anda bisa membaca iterator chain tanpa merasa itu 'sihir'.",
     ],
     references: [
@@ -1722,27 +1722,18 @@ fn main() {
       rustDocs.fmt,
       rustDocs.closuresChapter,
     ],
-    codeLabel: "Vec, iterator, dan HashMap bersama",
-    codeExample: `use std::collections::HashMap;
+    codeLabel: "Option, closure, iterator, dan formatting",
+    codeExample: `fn main() {
+    let raw_name = " rust ";
+    let label = Some(raw_name.trim().to_uppercase())
+        .map(|value| format!("Halo, {value}"))
+        .unwrap_or_else(|| String::from("Halo, tamu"));
 
-fn main() {
-    let numbers = vec![1, 2, 3, 4, 5];
-    let doubled_even: Vec<i32> = numbers
-        .iter()
-        .filter(|value| **value % 2 == 0)
-        .map(|value| value * 2)
-        .collect();
-
-    let mut scores = HashMap::new();
-    scores.insert("ownership", 95);
-    scores.insert("trait", 88);
-
-    println!("data   = {:?}", doubled_even);
-    println!("trait  = {}", scores.get("trait").copied().unwrap_or(0));
+    println!("{label}");
 }`,
     practice: [
-      "Ambil daftar string, ubah ke uppercase dengan iterator dan closure, lalu hitung frekuensi kemunculannya di HashMap.",
-      "Buat function yang mengembalikan Option ketika mencari data tertentu dalam Vec.",
+      "Gunakan Option<String> lalu ubah nilainya dengan map dan unwrap_or_else untuk merasakan peran closure kecil.",
+      "Ambil teks mentah, rapikan dengan trim, lalu rangkai lagi lewat format! agar transformasinya terasa eksplisit.",
     ],
     submodules: [
       {
@@ -1806,9 +1797,9 @@ fn main() {
         id: "stdlib-iterators",
         title: "Iterator dan transformasi data yang deklaratif",
         summary:
-          "Setelah data ada di Vec atau collection lain, iterator membantu Anda mengubah data tanpa menulis loop manual panjang. Submodule ini melatih membaca rantai method satu langkah demi satu langkah.",
+          "Begitu data bisa diiterasi, iterator membantu Anda mengubahnya tanpa menulis loop manual panjang. Submodule ini melatih membaca rantai method satu langkah demi satu langkah.",
         concepts: [
-          "into_iter memindahkan item keluar dari collection untuk diproses satu per satu.",
+          "into_iter memindahkan item keluar dari sumber iterasi untuk diproses satu per satu.",
           "map mengubah setiap item, collect merakit hasil ke collection baru.",
           "Tanda kurung yang hilang di iterator chain sering menghasilkan error parser yang membingungkan bila belum terbiasa.",
         ],
@@ -1820,7 +1811,7 @@ fn main() {
         references: [rustDocs.iterator],
         exampleLabel: "Vec diubah lewat iterator chain",
         exampleCode: `fn main() {
-    let numbers = vec![1, 2, 3, 4];
+    let numbers = [1, 2, 3, 4];
     let doubled: Vec<i32> = numbers
         .into_iter()
         .map(|value| value * 2)
@@ -1839,7 +1830,7 @@ fn main() {
               "Iterator cocok untuk transformasi data yang berulang.",
             ],
             brokenCode: `fn main() {
-    let numbers = vec![1, 2, 3, 4];
+    let numbers = [1, 2, 3, 4];
     let doubled: Vec<i32> = numbers
         .into_iter()
         .map(|value| value * 2
@@ -1904,22 +1895,123 @@ fn main() {
           },
         ],
       },
+    ],
+  },
+  {
+    id: "collections",
+    badge: "Modul 8",
+    title: "Sequence, Maps, Sets, dan collection standar",
+    summary:
+      "Modul ini memisahkan collection ke tempat khusus agar pilihan struktur data terasa lebih jelas. Fokusnya bukan menghafal semua API, tetapi memahami kapan memakai data berurutan, key-value, atau himpunan nilai unik.",
+    foundations: [
+      "Sequence seperti array, slice, dan Vec cocok untuk data berurutan yang ingin dibaca menurut posisi.",
+      "HashMap dipakai saat data perlu diakses lewat key, bukan index numerik.",
+      "HashSet berguna ketika yang terpenting adalah keunikan nilai, bukan urutan atau duplikasi.",
+      "Pilihan collection memengaruhi cara iterasi, lookup, dan mutasi dilakukan di seluruh program.",
+    ],
+    deepDive: [
+      "Vec biasanya menjadi pilihan default ketika Anda belum punya alasan kuat untuk memakai struktur lain.",
+      "HashMap menawarkan lookup berbasis key yang jelas, tetapi Anda perlu memikirkan ketersediaan key saat membaca data.",
+      "HashSet menyederhanakan kasus deduplication karena insert nilai yang sama tidak menambah elemen baru.",
+      "Collection yang tepat membuat code path berikutnya jauh lebih sederhana, termasuk saat nanti dipadukan dengan iterator.",
+    ],
+    pitfalls: [
+      "Memakai Vec untuk semua kasus padahal data sebenarnya lebih cocok dimodelkan sebagai key-value atau himpunan unik.",
+      "Mencoba menghafal seluruh API collection sebelum memahami model data apa yang sedang dibangun.",
+    ],
+    checkpoints: [
+      "Anda bisa menjelaskan kapan memilih Vec, HashMap, atau HashSet.",
+      "Anda paham beda akses berdasarkan posisi, key, dan keunikan nilai.",
+      "Anda mulai melihat collection sebagai keputusan desain, bukan sekadar syntax tambahan.",
+    ],
+    references: [rustDocs.vec, rustDocs.hashMap, rustDocs.hashSet],
+    codeLabel: "Tiga collection inti dalam satu contoh kecil",
+    codeExample: `use std::collections::{HashMap, HashSet};
+
+fn main() {
+    let sequence = vec!["rust", "ownership", "borrow"];
+
+    let mut scores = HashMap::new();
+    scores.insert("rust", 95);
+
+    let mut tags = HashSet::new();
+    tags.insert("dasar");
+    tags.insert("dasar");
+
+    println!("{}", sequence[0]);
+    println!("{}", scores["rust"]);
+    println!("{}", tags.contains("dasar"));
+}`,
+    practice: [
+      "Ambil satu data yang awalnya Anda simpan di Vec, lalu evaluasi apakah kasus itu sebenarnya lebih cocok sebagai HashMap atau HashSet.",
+      "Buat contoh kecil yang menyimpan urutan pelajaran, skor per topik, dan tag unik materi untuk merasakan perbedaan intent tiap collection.",
+    ],
+    submodules: [
       {
-        id: "stdlib-collections",
-        title: "Vec, HashMap, HashSet, dan collection yang sering muncul",
+        id: "collections-sequence",
+        title: "Sequence dengan array, slice, dan Vec",
         summary:
-          "Submodule ini merangkum collection yang paling sering dipakai setelah array. Tujuannya bukan menghafal API lengkap, tetapi tahu kapan memilih data berurutan, key-value, atau data unik.",
+          "Submodule ini menempatkan struktur data berurutan dalam satu kelompok pemahaman. Tujuannya agar Anda bisa membedakan data fixed-size, view ke data, dan buffer dinamis yang paling sering dipakai di Rust.",
         concepts: [
-          "Vec cocok sebagai collection default untuk data berurutan yang tumbuh dinamis.",
-          "HashMap dipakai ketika data diakses lewat key.",
-          "HashSet berguna saat Anda hanya peduli keunikan nilai, bukan posisinya.",
+          "Array memiliki ukuran tetap, slice hanya melihat sebagian data, dan Vec menampung urutan yang bisa tumbuh.",
+          "Sequence cocok ketika posisi elemen penting dan urutan penyimpanan ingin dipertahankan.",
+          "Indexing dan method seperti push membantu membangun intuisi paling dasar terhadap collection berurutan.",
         ],
         walkthrough: [
-          "Mulai dari Vec sebelum masuk ke map dan set.",
-          "Gunakan HashMap kecil agar relasi key-value langsung terasa.",
-          "Cetak satu nilai hasil lookup sederhana untuk memastikan struktur datanya terisi benar.",
+          "Mulai dari Vec kecil karena ia paling sering dipakai pada aplikasi sehari-hari.",
+          "Tambahkan elemen baru lalu baca panjang akhirnya agar perubahan datanya terasa konkret.",
+          "Bandingkan akses by index dengan operasi penambahan agar pola sequence terlihat jelas.",
         ],
-        references: [rustDocs.vec, rustDocs.hashMap, rustDocs.hashSet],
+        references: [rustDocs.vec],
+        exampleLabel: "Vec kecil yang tumbuh dinamis",
+        exampleCode: `fn main() {
+    let mut topics = vec!["rust", "ownership"];
+    topics.push("borrowing");
+
+    println!("{}", topics.len());
+    println!("{}", topics[0]);
+}`,
+        exercises: [
+          {
+            id: "collections-sequence-push",
+            title: "Tambahkan item ke sequence",
+            difficulty: "Menengah",
+            goal: "Perbaiki deklarasi Vec agar item baru bisa ditambahkan lalu panjang sequence bisa dicetak.",
+            focus: [
+              "Vec harus dideklarasikan lengkap sebelum method push dipakai.",
+              "Sequence membantu Anda menyimpan data dalam urutan yang eksplisit.",
+            ],
+            brokenCode: `fn main() {
+    let mut topics = vec!["rust", "ownership"
+    topics.push("borrowing");
+    println!("{}", topics.len());
+}`,
+            expectedOutput: "3",
+            hints: [
+              "Periksa penutup deklarasi vec! sebelum method pertama dipanggil.",
+              "push sudah benar; masalahnya ada tepat di baris inisialisasi.",
+            ],
+            explanation:
+              "Vec adalah collection berurutan yang sangat sering dipakai. Begitu deklarasinya tertutup benar, Anda bisa menambah item dan membaca panjangnya tanpa hambatan.",
+          },
+        ],
+      },
+      {
+        id: "collections-maps",
+        title: "Maps dengan HashMap untuk relasi key-value",
+        summary:
+          "Jika sequence bagus untuk data berurutan, map bagus untuk data yang dicari lewat nama atau identifier. Submodule ini membangun intuisi bahwa key adalah jalan utama menuju value.",
+        concepts: [
+          "HashMap menyimpan pasangan key-value untuk lookup berbasis key.",
+          "Struktur ini cocok ketika posisi data tidak penting, tetapi nama atau identifier sangat penting.",
+          "Deklarasi, insert, dan lookup adalah tiga operasi pertama yang wajib terasa natural.",
+        ],
+        walkthrough: [
+          "Mulai dari HashMap kecil dengan satu atau dua pasangan data.",
+          "Insert dulu sebelum membaca data dengan key agar alur logikanya terasa wajar.",
+          "Cetak satu value hasil lookup untuk memverifikasi bahwa pasangan datanya memang masuk.",
+        ],
+        references: [rustDocs.hashMap],
         exampleLabel: "HashMap kecil untuk key-value dasar",
         exampleCode: `use std::collections::HashMap;
 
@@ -1930,7 +2022,7 @@ fn main() {
 }`,
         exercises: [
           {
-            id: "stdlib-hashmap-basic",
+            id: "collections-hashmap-basic",
             title: "Isi HashMap lalu baca nilainya",
             difficulty: "Menengah",
             goal: "Perbaiki deklarasi HashMap agar data bisa diinsert lalu dibaca dengan key yang benar.",
@@ -1955,11 +2047,62 @@ fn main() {
           },
         ],
       },
+      {
+        id: "collections-sets",
+        title: "Sets dengan HashSet untuk data unik",
+        summary:
+          "Submodule ini memperkenalkan collection saat yang penting adalah keunikan nilai, bukan urutan atau pasangan key-value. HashSet sangat berguna untuk deduplication dan membership check.",
+        concepts: [
+          "HashSet menyimpan nilai unik tanpa duplikasi.",
+          "contains membantu memeriksa apakah suatu nilai sudah ada di dalam himpunan.",
+          "Set cocok untuk kasus seperti daftar tag, izin, atau status yang tidak boleh ganda.",
+        ],
+        walkthrough: [
+          "Mulai dari set kecil dengan beberapa tag sederhana.",
+          "Insert satu nilai lalu periksa kehadirannya dengan contains.",
+          "Fokus pada niat datanya: unik atau tidak, bukan pada posisi elemen.",
+        ],
+        references: [rustDocs.hashSet],
+        exampleLabel: "HashSet untuk membership check",
+        exampleCode: `use std::collections::HashSet;
+
+fn main() {
+    let mut tags = HashSet::new();
+    tags.insert("rust");
+    println!("{}", tags.contains("rust"));
+}`,
+        exercises: [
+          {
+            id: "collections-hashset-contains",
+            title: "Masukkan tag unik ke HashSet",
+            difficulty: "Menengah",
+            goal: "Perbaiki deklarasi HashSet agar tag bisa dimasukkan lalu dicek keberadaannya.",
+            focus: [
+              "HashSet cocok untuk data unik yang hanya perlu dicek kehadirannya.",
+              "Deklarasi collection harus selesai sebelum insert dan contains dipakai.",
+            ],
+            brokenCode: `use std::collections::HashSet;
+
+fn main() {
+    let mut tags = HashSet::new(
+    tags.insert("rust");
+    println!("{}", tags.contains("rust"));
+}`,
+            expectedOutput: "true",
+            hints: [
+              "Bandingkan bentuk inisialisasi HashSet dengan HashMap atau Vec yang sudah benar.",
+              "Method insert dan contains sudah tepat; masalahnya ada pada deklarasi awal.",
+            ],
+            explanation:
+              "HashSet memudahkan Anda menjaga data tetap unik. Setelah struktur dasarnya terbentuk dengan benar, operasi insert dan pengecekan membership menjadi sangat langsung.",
+          },
+        ],
+      },
     ],
   },
   {
     id: "advanced",
-    badge: "Modul 8",
+    badge: "Modul 9",
     title: "Result, lifetime, derive, smart pointer, static, macro",
     summary:
       "Bagian akhir ini bukan untuk dihafal sekali baca, tetapi untuk memahami bagaimana Rust menangani error, masa hidup reference, dan struktur data yang lebih kompleks.",
