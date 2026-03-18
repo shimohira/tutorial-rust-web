@@ -57,7 +57,8 @@ Lalu minta thread baru untuk membaca `MEMORY.md` terlebih dahulu.
 - Halaman modul sekarang menampilkan ringkasan progres, status per submodule, dan tombol reset progres modul.
 - Landing page sekarang menampilkan progres per modul dan progres total yang sudah diselesaikan.
 - Coverage materi di `data/tutorial.ts` sudah diperluas agar lebih dekat ke outline video sumber, terutama pada syntax, ownership, control flow, modeling, abstraction, stdlib, dan advanced.
-- Jumlah submodule sekarang lebih variatif: `syntax` 4, `ownership` 4, `control-flow` 3, `modeling` 3, `abstraction` 3, `stdlib` 4, dan `advanced` 6.
+- Materi collection sekarang dipisah ke modul khusus `collections` agar `Sequence`, `Maps`, dan `Sets` punya ruang belajar sendiri.
+- Jumlah submodule sekarang lebih variatif: `syntax` 4, `ownership` 4, `control-flow` 3, `modeling` 3, `abstraction` 3, `stdlib` 3, `collections` 3, dan `advanced` 6.
 - README dan `.gitignore` sudah ditambahkan.
 
 ## Verifikasi terakhir
@@ -76,6 +77,7 @@ Hasil terakhir:
 - test memverifikasi 3 submodule pada modul setup, memastikan masing-masing lab bisa dijalankan, progres modul berubah, dan progres tetap tersimpan setelah reload
 - test juga memverifikasi menu sidebar modul tetap bisa dipakai untuk membuka modul terakhir pada viewport sempit
 - test juga memverifikasi modul yang relevan menampilkan link resmi Rust docs, termasuk link `Range` di modul `control-flow`
+- test juga memverifikasi modul collection terpisah menampilkan tiga submodule: `sequence`, `maps`, dan `sets`
 - build dan test terakhir tetap lolos setelah ekspansi materi/submodule besar di `data/tutorial.ts`
 
 ## Catatan environment
