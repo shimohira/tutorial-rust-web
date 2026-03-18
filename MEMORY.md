@@ -51,7 +51,16 @@ Lalu minta thread baru untuk membaca `MEMORY.md` terlebih dahulu.
 - Jika submodule dipakai, masing-masing submodule dapat memiliki Rust Lab sendiri.
 - Materi sekarang juga bisa menyimpan referensi resmi Rust docs per modul dan per submodule.
 - Halaman modul menampilkan panel "Rust docs terkait" untuk topik yang memang punya rujukan resmi yang relevan, misalnya `Range`, `String`, `Option`, `Iterator`, `Result`, `Deref`, `Rc`, dan `RefCell`.
+- Submodule sekarang juga mendukung panel "Contoh penggunaan" yang berisi kasus pakai praktis per topik.
+- `advanced-smart-pointers` sudah diperluas dengan contoh `Box`, `Rc`, `Deref`, `RefCell`, `Box` pada `struct`, `Box<dyn Trait>`, `Deref` pada wrapper struct, dan perbandingan `tanpa Box` vs `dengan Box` pada recursive type.
+- Pola perbandingan serupa sekarang juga dipakai di beberapa submodule lain, misalnya borrow vs move, if statement vs if expression, boolean state vs enum, helper root vs module, sentinel vs Option, loop manual vs iterator, Vec tuple vs HashMap, Vec dedup vs HashSet, dan unwrap vs Result.
+- Beberapa submodule lain juga mulai memakai contoh berbasis custom type, misalnya trait pada dua struct, generic vs function duplikat, dan HashMap yang menyimpan struct sebagai value.
 - Menu sidebar modul dan submodule sudah dibuat lebih compact dan scrollable agar item terakhir tetap mudah diakses, termasuk di viewport sempit.
+- Layout navigasi modul kini tidak lagi memakan kolom sidebar tetap di desktop; menu modul dan submodule dipindah ke panel navigasi full-width di atas konten utama agar lebar layar lebih banyak dipakai untuk materi dan code block.
+- Panel navigasi modul sekarang sticky saat user scroll ke bawah.
+- Saat panel navigasi sudah menempel di atas viewport, tampilannya berubah ke mode ringkas dengan tombol expand untuk daftar modul atau daftar submodule agar tinggi panel tetap hemat.
+- Saat mode sticky di-expand, daftar modul/submodule tetap berupa strip horizontal, tetapi sekarang strip itu membentang penuh di dalam `navigation-shell` agar area scroll memanfaatkan lebar panel aktif.
+- Anchor submodule sekarang memakai `scroll-margin-top` yang lebih besar supaya lompatan ke bagian tertentu tidak ketutup panel navigasi sticky.
 - `ExerciseWorkbench.vue` sudah aman dipakai berkali-kali dalam satu halaman.
 - Progress tracking lokal per exercise/submodule sudah ditambahkan memakai local storage browser.
 - Halaman modul sekarang menampilkan ringkasan progres, status per submodule, dan tombol reset progres modul.
@@ -76,8 +85,13 @@ Hasil terakhir:
 - browser smoke test sukses
 - test memverifikasi 3 submodule pada modul setup, memastikan masing-masing lab bisa dijalankan, progres modul berubah, dan progres tetap tersimpan setelah reload
 - test juga memverifikasi menu sidebar modul tetap bisa dipakai untuk membuka modul terakhir pada viewport sempit
+- test juga memverifikasi navigasi sticky bisa di-expand kembali setelah user scroll jauh ke bawah
+- test juga memverifikasi daftar modul pada sticky expand memakai hampir seluruh lebar `navigation-shell` dan tetap horizontal-scrollable
 - test juga memverifikasi modul yang relevan menampilkan link resmi Rust docs, termasuk link `Range` di modul `control-flow`
 - test juga memverifikasi modul collection terpisah menampilkan tiga submodule: `sequence`, `maps`, dan `sets`
+- test juga memverifikasi submodule smart pointer menampilkan contoh penggunaan detail dan panel perbandingan `Tanpa Box` vs `Dengan Box`
+- test juga memverifikasi panel perbandingan lintas modul muncul pada submodule seperti `ownership-borrowing` dan `stdlib-option`
+- code block pada panel contoh penggunaan sekarang bisa scroll horizontal di dalam panel, sehingga baris Rust yang panjang tidak pecah atau meluber ke card sebelah
 - build dan test terakhir tetap lolos setelah ekspansi materi/submodule besar di `data/tutorial.ts`
 
 ## Catatan environment
