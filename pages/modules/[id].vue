@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import SubmoduleSection from "~/components/SubmoduleSection.vue";
 import TutorialSection from "~/components/TutorialSection.vue";
 import { getLessonSectionById, lessonSections, moduleIds } from "~/data/tutorial";
 
 const { clearModuleProgress, getModuleProgress, getSubmoduleProgress } = useTutorialProgress();
 const route = useRoute();
+const navigationSentinel = ref<HTMLElement | null>(null);
+const isNavigationSticky = ref(false);
+const expandedNavigationPanel = ref<"modules" | "submodules" | null>(null);
+let navigationObserver: IntersectionObserver | null = null;
 
 const moduleId = computed(() => String(route.params.id ?? ""));
 const section = computed(() => getLessonSectionById(moduleId.value));
@@ -113,6 +117,62 @@ const progressPercentLabel = computed(() => {
   return hasExercises.value ? `${Math.round(moduleProgress.value.completionRatio * 100)}%` : "N/A";
 });
 
+const showExpandedNavigation = computed(() => {
+  return !isNavigationSticky.value || expandedNavigationPanel.value !== null;
+});
+
+const showModuleNavigation = computed(() => {
+  return !isNavigationSticky.value || expandedNavigationPanel.value === "modules";
+});
+
+const showSubmoduleNavigation = computed(() => {
+  return !isNavigationSticky.value || expandedNavigationPanel.value === "submodules";
+});
+
+const toggleNavigationPanel = (panel: "modules" | "submodules") => {
+  if (!isNavigationSticky.value) {
+    return;
+  }
+
+  expandedNavigationPanel.value = expandedNavigationPanel.value === panel ? null : panel;
+};
+
+watch(moduleId, () => {
+  expandedNavigationPanel.value = null;
+});
+
+onMounted(() => {
+  if (!navigationSentinel.value || typeof window === "undefined") {
+    return;
+  }
+
+  if (typeof window.IntersectionObserver === "undefined") {
+    return;
+  }
+
+  navigationObserver = new window.IntersectionObserver(
+    ([entry]) => {
+      const nextStickyState = !entry.isIntersecting && entry.boundingClientRect.top < 18;
+
+      isNavigationSticky.value = nextStickyState;
+
+      if (!nextStickyState) {
+        expandedNavigationPanel.value = null;
+      }
+    },
+    {
+      threshold: 0,
+      rootMargin: "-18px 0px 0px 0px",
+    },
+  );
+
+  navigationObserver.observe(navigationSentinel.value);
+});
+
+onBeforeUnmount(() => {
+  navigationObserver?.disconnect();
+});
+
 useHead(() => ({
   title: section.value
     ? `${section.value.badge} - ${section.value.title}`
@@ -202,19 +262,90 @@ useHead(() => ({
       </div>
     </header>
 
-    <div class="content-grid">
-      <aside class="sidebar">
-        <div class="sidebar-stack">
-          <div class="panel toc-panel">
+    <div class="main-stack module-main-stack">
+      <div
+        ref="navigationSentinel"
+        class="module-navigation-sentinel"
+        aria-hidden="true"
+      />
+
+      <section
+        class="panel module-navigation-shell"
+        :class="{ 'is-stuck': isNavigationSticky }"
+        data-testid="module-navigation-shell"
+      >
+        <div
+          v-if="isNavigationSticky"
+          class="navigation-compact-bar"
+          data-testid="sticky-navigation-controls"
+        >
+          <button
+            type="button"
+            class="navigation-toggle"
+            :class="{ active: expandedNavigationPanel === 'modules' }"
+            :aria-expanded="expandedNavigationPanel === 'modules'"
+            data-testid="module-nav-toggle"
+            @click="toggleNavigationPanel('modules')"
+          >
+            <span>Semua modul</span>
+            <strong>
+              {{
+                expandedNavigationPanel === "modules"
+                  ? "Tutup daftar modul"
+                  : `${section.badge} aktif`
+              }}
+            </strong>
+            <small>
+              {{
+                expandedNavigationPanel === "modules"
+                  ? "Kembali ke mode ringkas"
+                  : section.title
+              }}
+            </small>
+          </button>
+
+          <button
+            v-if="hasSubmodules"
+            type="button"
+            class="navigation-toggle"
+            :class="{ active: expandedNavigationPanel === 'submodules' }"
+            :aria-expanded="expandedNavigationPanel === 'submodules'"
+            data-testid="submodule-nav-toggle"
+            @click="toggleNavigationPanel('submodules')"
+          >
+            <span>Submodule</span>
+            <strong>
+              {{
+                expandedNavigationPanel === "submodules"
+                  ? "Tutup daftar submodule"
+                  : `${submoduleCount} bagian`
+              }}
+            </strong>
+            <small>
+              {{
+                expandedNavigationPanel === "submodules"
+                  ? "Kembali ke mode ringkas"
+                  : "Buka bagian tertentu tanpa kehilangan ruang baca"
+              }}
+            </small>
+          </button>
+        </div>
+
+        <div
+          v-if="showExpandedNavigation"
+          class="navigation-grid"
+          :class="{ 'navigation-grid-single': isNavigationSticky }"
+        >
+          <div v-show="showModuleNavigation" class="navigation-panel">
             <div class="sidebar-panel-head">
               <p class="eyebrow">Semua modul</p>
               <span>{{ lessonSections.length }} total</span>
             </div>
-            <nav class="toc-nav module-toc-nav" data-testid="module-sidebar-nav">
+            <nav class="toc-chip-nav module-chip-nav" data-testid="module-sidebar-nav">
               <NuxtLink
                 v-for="item in lessonSections"
                 :key="item.id"
-                class="toc-link module-link"
+                class="toc-link toc-chip module-chip"
                 :class="{ active: item.id === section.id }"
                 :to="`/modules/${item.id}`"
               >
@@ -224,20 +355,23 @@ useHead(() => ({
             </nav>
           </div>
 
-          <div class="panel submodule-toc-panel">
+          <div
+            v-show="showSubmoduleNavigation"
+            class="navigation-panel"
+          >
             <div class="sidebar-panel-head">
               <p class="eyebrow">Submodule modul ini</p>
               <span>{{ hasSubmodules ? `${submoduleCount} bagian` : "0 bagian" }}</span>
             </div>
             <nav
               v-if="hasSubmodules"
-              class="toc-nav submodule-nav"
+              class="toc-chip-nav submodule-chip-nav"
               data-testid="submodule-sidebar-nav"
             >
               <a
                 v-for="(submodule, index) in section.submodules"
                 :key="submodule.id"
-                class="toc-link submodule-link"
+                class="toc-link toc-chip submodule-chip"
                 :class="{ complete: submoduleProgressMap[submodule.id]?.isCompleted }"
                 :href="`#${submodule.id}`"
               >
@@ -257,7 +391,7 @@ useHead(() => ({
             </p>
           </div>
         </div>
-      </aside>
+      </section>
 
       <main class="main-stack">
         <TutorialSection :section="section" />

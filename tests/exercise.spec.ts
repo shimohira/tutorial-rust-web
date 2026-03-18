@@ -106,6 +106,46 @@ test("sidebar module menu stays usable on narrow screens", async ({ page }) => {
   await expect(page.getByTestId("submodule-sidebar-nav")).toBeVisible();
 });
 
+test("sticky navigation can expand after scrolling", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/modules/setup");
+
+  await page.evaluate(() => {
+    window.scrollTo(0, 1800);
+  });
+
+  const navigationShell = page.getByTestId("module-navigation-shell");
+  await expect(navigationShell).toHaveClass(/is-stuck/);
+
+  const moduleToggle = page.getByTestId("module-nav-toggle");
+  await expect(moduleToggle).toBeVisible();
+  await moduleToggle.click();
+
+  const moduleNav = page.getByTestId("module-sidebar-nav");
+  await expect(moduleNav).toBeVisible();
+  await expect
+    .poll(async () => {
+      return moduleNav.evaluate((element) => {
+        const shell = element.closest("[data-testid='module-navigation-shell']");
+
+        if (!(shell instanceof HTMLElement)) {
+          return false;
+        }
+
+        return element.clientWidth >= shell.clientWidth * 0.85 && element.scrollWidth > element.clientWidth;
+      });
+    })
+    .toBe(true);
+
+  await moduleNav
+    .getByRole("link", {
+      name: /Result, lifetime, derive, smart pointer, static, macro/i,
+    })
+    .click();
+
+  await expect(page).toHaveURL(/\/modules\/advanced$/);
+});
+
 test("related modules expose official Rust docs links", async ({ page }) => {
   await page.goto("/modules/control-flow");
 
@@ -137,4 +177,64 @@ test("collections are split into sequence maps and sets submodules", async ({ pa
   await expect(page.getByTestId("submodule-collections-sequence")).toBeVisible();
   await expect(page.getByTestId("submodule-collections-maps")).toBeVisible();
   await expect(page.getByTestId("submodule-collections-sets")).toBeVisible();
+});
+
+test("smart pointers submodule shows detailed usage examples", async ({ page }) => {
+  await page.goto("/modules/advanced");
+
+  const smartPointerUsage = page.getByTestId("submodule-usage-advanced-smart-pointers");
+
+  await expect(smartPointerUsage).toBeVisible();
+  await expect(
+    smartPointerUsage.getByRole("heading", {
+      level: 4,
+      name: "Tanpa Box vs dengan Box pada recursive type",
+    }),
+  ).toBeVisible();
+  await expect(
+    smartPointerUsage.getByRole("heading", {
+      level: 4,
+      name: "Box membungkus struct konfigurasi besar",
+    }),
+  ).toBeVisible();
+  await expect(
+    smartPointerUsage.getByRole("heading", {
+      level: 4,
+      name: "Implementasi Deref pada struct pembungkus",
+    }),
+  ).toBeVisible();
+  await expect(
+    smartPointerUsage.getByRole("heading", {
+      level: 4,
+      name: "Box untuk trait object runtime",
+    }),
+  ).toBeVisible();
+
+  const comparison = page.getByTestId("submodule-usage-comparison-advanced-smart-pointers-0");
+  await expect(comparison).toBeVisible();
+  await expect(comparison.getByText("Tanpa Box")).toBeVisible();
+  await expect(comparison.getByText("Dengan Box")).toBeVisible();
+});
+
+test("comparison usage examples appear on other concept-heavy submodules", async ({ page }) => {
+  await page.goto("/modules/ownership");
+
+  const borrowingComparison = page.getByTestId("submodule-usage-comparison-ownership-borrowing-1");
+  await expect(borrowingComparison).toBeVisible();
+  await expect(borrowingComparison.getByText("Tanpa borrow")).toBeVisible();
+  await expect(borrowingComparison.getByText("Dengan borrow")).toBeVisible();
+
+  await page.goto("/modules/stdlib");
+
+  const optionComparison = page.getByTestId("submodule-usage-comparison-stdlib-option-1");
+  await expect(optionComparison).toBeVisible();
+  await expect(optionComparison.getByText("Dengan sentinel kosong")).toBeVisible();
+  await expect(optionComparison.getByText("Dengan Option")).toBeVisible();
+
+  await page.goto("/modules/abstraction");
+
+  const traitComparison = page.getByTestId("submodule-usage-comparison-abstraction-traits-1");
+  await expect(traitComparison).toBeVisible();
+  await expect(traitComparison.getByText("Tanpa trait")).toBeVisible();
+  await expect(traitComparison.getByText("Dengan trait")).toBeVisible();
 });
