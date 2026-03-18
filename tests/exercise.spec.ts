@@ -76,7 +76,7 @@ fn main() {
   await page.reload();
 
   await expect(page.getByTestId("module-progress-summary")).toHaveText("3 / 3 submodule selesai");
-  await expect(page.getByTestId("module-progress-labs")).toHaveText("3 / 3 latihan");
+  await expect(page.getByTestId("module-progress-labs")).toHaveText("3 / 3 lab selesai");
 
   await page.goto("/");
   await expect(page.getByTestId("module-progress-setup")).toContainText("3 / 3 submodule selesai");
@@ -144,6 +144,70 @@ test("sticky navigation can expand after scrolling", async ({ page }) => {
     .click();
 
   await expect(page).toHaveURL(/\/modules\/advanced$/);
+});
+
+test("floating language and theme controls switch and persist preferences", async ({ page }) => {
+  await page.goto("/");
+
+  const controls = page.getByTestId("view-controls");
+  await expect(controls).toBeVisible();
+  await expect(controls).toHaveAttribute("data-ready", "true", {
+    timeout: 15_000,
+  });
+  await expect(page.locator("html")).toHaveAttribute("lang", "id");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+
+  await page.getByTestId("view-controls-toggle").click();
+
+  await expect(page.getByTestId("view-controls-language")).toBeVisible();
+  await expect(page.getByTestId("view-controls-theme")).toBeVisible();
+
+  await page.getByTestId("locale-option-en").click();
+
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(
+    page.getByRole("heading", {
+      name: /Learn Rust by module, with labs that stay tightly connected to the lesson\./i,
+    }),
+  ).toBeVisible();
+
+  await page.getByTestId("theme-option-dark").click();
+
+  await expect
+    .poll(async () => {
+      return page.locator("html").evaluate((element) => {
+        return element.getAttribute("data-theme");
+      });
+    })
+    .toBe("dark");
+
+  await page.getByTestId("theme-option-reading").click();
+
+  await expect
+    .poll(async () => {
+      return page.locator("html").evaluate((element) => {
+        return element.getAttribute("data-theme");
+      });
+    })
+    .toBe("reading");
+
+  await page.reload();
+
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+
+  await expect
+    .poll(async () => {
+      return page.locator("html").evaluate((element) => {
+        return element.getAttribute("data-theme");
+      });
+    })
+    .toBe("reading");
+
+  await expect(
+    page.getByRole("heading", {
+      name: /Learn Rust by module, with labs that stay tightly connected to the lesson\./i,
+    }),
+  ).toBeVisible();
 });
 
 test("related modules expose official Rust docs links", async ({ page }) => {
